@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayerSub</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      font-size: 1.2em; /* Reduced text size */
+      margin-bottom: 16px;
+    }
+    .button {
+      display: inline-block;
+      padding: 8px 16px;
+      margin: 4px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .input {
+      padding: 8px;
+      margin-right: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .player {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      padding: 8px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .player.playing {
+      background-color: #d4edda;
+    }
+    .sortable {
+      cursor: pointer;
+    }
+    .player div {
+      flex: 1;
+      text-align: center;
+    }
+    .player .actions {
+      flex: 2;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameStatus">Game Not Started</div>
+  <div id="elapsedTime">Elapsed Time: 0:00</div>
+  <button id="nextHalfBtn" class="button">Start Game/Next Half</button>
+  <button id="resetGameBtn" class="button">Reset Game</button>
+  <div>
+    <button class="sortable" onclick="sortPlayers('name')">Name</button>
+    <button class="sortable" onclick="sortPlayers('timeIn')">Time In</button>
+    <button class="sortable" onclick="sortPlayers('timeOut')">Time Out</button>
+    <button class="sortable" onclick="sortPlayers('totalTimeIn')">Total Time In</button>
+    <button class="sortable" onclick="sortPlayers('totalTimeOut')">Total Time Out</button>
+  </div>
+  <div id="playersList">
+    <div class="player header">
+      <div>Name</div>
+      <div>Status</div>
+      <div>Timer</div>
+      <div>Total Time In</div>
+      <div>Total Time Out</div>
+      <div class="actions">Actions</div>
+    </div>
+  </div>
+  <div>
+    <input id="playerNameInput" type="text" placeholder="Player Name">
+    <input id="playerNumberInput" type="text" placeholder="Player Number">
+    <button id="addPlayerBtn" class="button">Add Player</button>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
