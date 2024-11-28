@@ -244,3 +244,12 @@ addPlayerBtn.addEventListener("click", addPlayer);
 renderGameStatus();
 renderElapsedTime();
 renderPlayers();
+
+// Continue the timer if a half is in progress
+if (gameHalf > 0 && intervalId === null) {
+  intervalId = setInterval(() => {
+    elapsedTime += 1;
+    renderElapsedTime();
+    updatePlayerTimers();
+  }, 1000);
+}
