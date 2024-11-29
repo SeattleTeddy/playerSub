@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlayerSub v12</title>
+  <title>PlayerSub v13</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,14 +43,22 @@
     .player {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin: 8px 0;
       padding: 8px;
       background-color: #f9f9f9;
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
-    .player.playing {
+    .player.playing .name,
+    .player.playing .timer,
+    .player.playing .totalTimeIn {
       background-color: #d4edda;
+    }
+    .player.bench .name,
+    .player.bench .timer,
+    .player.bench .totalTimeOut {
+      background-color: #f8d7da;
     }
     .sortable {
       cursor: pointer;
@@ -59,38 +67,185 @@
       flex: 1;
       text-align: center;
     }
-    .player .actions {
-      flex: 2;
-      text-align: center;
+    .player .name {
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      position: relative; /* Relative positioning for the name/status column */
+    }
+    .player .timer{
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .player .totalTimeIn,
+    .player .totalTimeOut {
+      padding: 2px;
+      border-radius: 2px;
+    }
+    #elapsedTime {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-right: 16px; /* Add space between elapsed time and button */
+    }
+    .error-message {
+      color: #dc3545;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 4px;
+      display: none;
+    }
+
+    /* Visual feedback when a player is clicked */
+    .player.clicked {
+      animation: click-feedback 0.2s;
+    }
+
+    @keyframes click-feedback {
+      0% {
+        background-color: rgba(0, 123, 255, 0.5); /* Semi-transparent highlight */
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
+
+    /* Visual feedback when a player is subbed in */
+    .player.subbing-in {
+      animation: sub-in-feedback 0.3s, sub-in-light 0.3s 0.3s forwards;
+    }
+
+    @keyframes sub-in-feedback {
+      0% {
+        background-color: rgba(40, 167, 69, 0.8); /* Strong green highlight */
+      }
+      100% {
+        background-color: rgba(40, 167, 69, 0.3); /* Lighter green highlight */
+      }
+    }
+
+    @keyframes sub-in-light {
+      0% {
+        background-color: rgba(40, 167, 69, 0.3); /* Lighter green highlight */
+      }
+      100% {
+        background-color: rgba(40, 167, 69, 0.1); /* Even lighter green highlight */
+      }
+    }
+
+    /* Visual feedback when a player is subbed out */
+    .player.subbing-out {
+      animation: sub-out-feedback 0.3s, sub-out-light 0.3s 0.3s forwards;
+    }
+
+    @keyframes sub-out-feedback {
+      0% {
+        background-color: rgba(220, 53, 69, 0.8); /* Strong red highlight */
+      }
+      100% {
+        background-color: rgba(220, 53, 69, 0.3); /* Lighter red highlight */
+      }
+    }
+
+    @keyframes sub-out-light {
+      0% {
+        background-color: rgba(220, 53, 69, 0.3); /* Lighter red highlight */
+      }
+      100% {
+        background-color: rgba(220, 53, 69, 0.1); /* Even lighter red highlight */
+      }
+    }
+
+    .controls-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    #startStopBtn {
+      width: 40px; /* Set a fixed width */
+      height: 40px; /* Set a fixed height */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center; /* Center the glyphs */
+      font-size: 1.5em; /* Adjust font size as needed */
+    }
+
+    .play-button {
+      background-color: #28a745; /* Green background for play */
+    }
+
+    .pause-button {
+      background-color: #f0ad4e; /* Light orange background for pause */
+    }
+
+    .small-button {
+      position: absolute;
+      width: 24px; /* Increase size */
+      height: 24px; /* Increase size */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1em; /* Increase font size */
+      border: none;
+      border-radius: 8px; /* Rounded squares */
+      cursor: pointer;
+      top: 50%; /* Center vertically */
+      transform: translateY(-50%); /* Adjust for exact centering */
+    }
+
+    .small-play-button {
+      background-color: #28a745; /* Green background for play */
+      right: 0; /* Move closer to the text */
+      padding-right: 5px; /* Add padding to the right */
+    }
+
+    .small-pause-button {
+      background-color: #f0ad4e; /* Light orange background for pause */
+      left: 0; /* Move closer to the text */
+      padding-left: 5px; /* Add padding to the left */
+    }
+
+    @media (max-width: 600px) {
+      .small-play-button {
+        right: 0; /* Adjust position on smaller screens */
+      }
+
+      .small-pause-button {
+        left: 0; /* Adjust position on smaller screens */
+      }
     }
   </style>
 </head>
 <body>
-  <div id="gameStatus">Game Not Started</div>
-  <div id="elapsedTime">Elapsed Time: 0:00</div>
-  <button id="nextHalfBtn" class="button">Start Game/Next Half</button>
-  <button id="resetGameBtn" class="button">Reset Game</button>
+  <div class="controls-container">
+    <div id="elapsedTime">0:00</div>
+    <button id="startStopBtn" class="button play-button">&#9658;</button> <!-- Play glyph -->
+  </div>
   <div>
-    <button class="sortable" onclick="sortPlayers('name')">Name</button>
-    <button class="sortable" onclick="sortPlayers('timeIn')">Time In</button>
-    <button class="sortable" onclick="sortPlayers('timeOut')">Time Out</button>
-    <button class="sortable" onclick="sortPlayers('totalTimeIn')">Total Time In</button>
-    <button class="sortable" onclick="sortPlayers('totalTimeOut')">Total Time Out</button>
+    <button class="sortable" onclick="ui.sortPlayers('name')">Name</button>
+    <button class="sortable" onclick="ui.sortPlayers('timeIn')">Time In</button>
+    <button class="sortable" onclick="ui.sortPlayers('timeOut')">Time Out</button>
+    <button class="sortable" onclick="ui.sortPlayers('totalTimeIn')">Total Time In</button>
+    <button class="sortable" onclick="ui.sortPlayers('totalTimeOut')">Total Time Out</button>
   </div>
   <div id="playersList">
     <div class="player header">
-      <div>Name</div>
-      <div>Status</div>
+      <div>Name / Status</div>
       <div>Timer</div>
-      <div>Total Time In</div>
-      <div>Total Time Out</div>
-      <div class="actions">Actions</div>
+      <div>Total In / Total Out</div> <!-- Updated label -->
     </div>
   </div>
   <div>
     <input id="playerNameInput" type="text" placeholder="Player Name">
     <input id="playerNumberInput" type="text" placeholder="Player Number">
     <button id="addPlayerBtn" class="button">Add Player</button>
+  </div>
+  <div class="controls-container">
+    <button id="resetGameBtn" class="button">Reset Game</button>
   </div>
   <script src="script.js"></script>
 </body>
