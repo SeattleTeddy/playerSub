@@ -218,6 +218,29 @@
         left: 0; /* Adjust position on smaller screens */
       }
     }
+
+    /* Adjust button sizes and positions for mobile devices */
+    @media (max-width: 600px) {
+      #startStopBtn {
+        width: 30px; /* Reduce size for mobile */
+        height: 30px;
+        font-size: 1.2em;
+      }
+
+      .small-button {
+        width: 20px; /* Reduce size for mobile */
+        height: 20px;
+        font-size: 0.9em;
+      }
+
+      .small-play-button {
+        right: 5px; /* Move closer to center */
+      }
+
+      .small-pause-button {
+        left: 5px; /* Move closer to center */
+      }
+    }
   </style>
 </head>
 <body>
