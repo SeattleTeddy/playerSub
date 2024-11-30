@@ -4,6 +4,8 @@ class GameState {
         this.gameHalf = 0;
         this.elapsedTime = 0;
         this.isRunning = false; // Add isRunning to track game state
+        this.startTime = null; // Track the actual start time
+        this.pauseTime = null; // Track the pause time
     }
 
     resetState() {
@@ -11,11 +13,15 @@ class GameState {
         localStorage.removeItem('gameHalf'); // Clear gameHalf from local storage
         localStorage.removeItem('elapsedTime'); // Clear elapsedTime from local storage
         localStorage.removeItem('isRunning'); // Clear isRunning from local storage
+        localStorage.removeItem('startTime'); // Clear startTime from local storage
+        localStorage.removeItem('pauseTime'); // Clear pauseTime from local storage
 
         this.players = this.getDefaultPlayers();
         this.gameHalf = 0;
         this.elapsedTime = 0;
         this.isRunning = false; // Reset isRunning state
+        this.startTime = null;
+        this.pauseTime = null;
         this.saveState();
     }
 
@@ -25,11 +31,15 @@ class GameState {
             const gameHalf = JSON.parse(localStorage.getItem('gameHalf'));
             const elapsedTime = JSON.parse(localStorage.getItem('elapsedTime'));
             const isRunning = JSON.parse(localStorage.getItem('isRunning'));
+            const startTime = JSON.parse(localStorage.getItem('startTime'));
+            const pauseTime = JSON.parse(localStorage.getItem('pauseTime'));
 
             this.players = players || this.getDefaultPlayers();
             this.gameHalf = gameHalf || 0;
             this.elapsedTime = elapsedTime || 0;
             this.isRunning = isRunning || false; // Load isRunning state
+            this.startTime = startTime ? new Date(startTime) : null;
+            this.pauseTime = pauseTime ? new Date(pauseTime) : null;
         } catch (error) {
             console.error('Error loading game state:', error);
             this.resetState();
@@ -42,6 +52,8 @@ class GameState {
             localStorage.setItem('gameHalf', JSON.stringify(this.gameHalf));
             localStorage.setItem('elapsedTime', JSON.stringify(this.elapsedTime));
             localStorage.setItem('isRunning', JSON.stringify(this.isRunning)); // Save isRunning state
+            localStorage.setItem('startTime', JSON.stringify(this.startTime));
+            localStorage.setItem('pauseTime', JSON.stringify(this.pauseTime));
         } catch (error) {
             console.error('Error saving game state:', error);
         }
@@ -106,6 +118,12 @@ class GameUI {
     }
 
     renderElapsedTime() {
+        const now = Date.now();
+        if (this.gameState.isRunning) {
+            this.gameState.elapsedTime = Math.floor((now - this.gameState.startTime) / 1000);
+        } else if (this.gameState.pauseTime) {
+            this.gameState.elapsedTime = Math.floor((this.gameState.pauseTime - this.gameState.startTime) / 1000);
+        }
         const minutes = Math.floor(this.gameState.elapsedTime / 60);
         const seconds = this.gameState.elapsedTime % 60;
         this.elements.elapsedTime.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
@@ -168,10 +186,19 @@ class GameUI {
         if (player) {
             const currentTime = this.gameState.elapsedTime;
 
+            // Add visual feedback BEFORE state changes and sorting
             const playerEl = document.getElementById(`player-${id}`);
+            if (playerEl) {
+                if (player.currentStatus === "bench") {
+                    playerEl.classList.add('subbing-in');
+                } else {
+                    playerEl.classList.add('subbing-out');
+                }
+            }
 
             if (player.currentStatus === "bench") {
-                // Subbing in
+                // Subbing in logic
+                player.isRecentlySubbedIn = true;
                 if (player.lastSubbedOutTime !== null) {
                     player.totalTimeOut += currentTime - player.lastSubbedOutTime;
                 }
@@ -179,17 +206,9 @@ class GameUI {
                 player.subbedInTime = this.formatTime(currentTime);
                 player.lastSubbedInTime = currentTime;
                 player.timeOut = 0;
-
-                // Add 'subbing-in' class for green visual feedback
-                if (playerEl) {
-                    playerEl.classList.add('subbing-in');
-                    setTimeout(() => {
-                        playerEl.classList.remove('subbing-in');
-                    }, 200);
-                }
-                player.isRecentlySubbedIn = true; // Set flag to keep visual effect
             } else {
-                // Subbing out
+                // Subbing out logic
+                player.isRecentlySubbedOut = true;
                 if (player.lastSubbedInTime !== null) {
                     player.totalTimeIn += currentTime - player.lastSubbedInTime;
                 }
@@ -197,19 +216,22 @@ class GameUI {
                 player.subbedOutTime = this.formatTime(currentTime);
                 player.lastSubbedOutTime = currentTime;
                 player.timeIn = 0;
-
-                // Add 'subbing-out' class for red visual feedback
-                if (playerEl) {
-                    playerEl.classList.add('subbing-out');
-                    setTimeout(() => {
-                        playerEl.classList.remove('subbing-out');
-                    }, 200);
-                }
-                player.isRecentlySubbedOut = true; // Set flag to keep visual effect
             }
 
             this.gameState.saveState();
-            this.needsSorting = true; // Indicate that sorting is needed
+
+            // Delay sorting to allow visual feedback to be seen
+            setTimeout(() => {
+                this.needsSorting = true;
+                this.sortPlayers();
+                
+                // Remove visual feedback after sorting
+                setTimeout(() => {
+                    player.isRecentlySubbedIn = false;
+                    player.isRecentlySubbedOut = false;
+                    this.renderPlayers();
+                }, 500);
+            }, 200);
         }
     }
 
@@ -244,6 +266,13 @@ class GameUI {
     }
 
     updatePlayerTimers() {
+        const now = Date.now();
+        if (this.gameState.isRunning) {
+            this.gameState.elapsedTime = Math.floor((now - this.gameState.startTime) / 1000);
+        } else if (this.gameState.pauseTime) {
+            this.gameState.elapsedTime = Math.floor((this.gameState.pauseTime - this.gameState.startTime) / 1000);
+        }
+
         this.gameState.players.forEach((player) => {
             if (player.currentStatus === "playing") {
                 player.timeIn = this.gameState.elapsedTime - player.lastSubbedInTime;
@@ -280,7 +309,7 @@ class GameUI {
         this.gameState.saveState();
         
         if (this.needsSorting) {
-            this.sortPlayers('timeOut');
+            this.sortPlayers();
             this.renderPlayers();
 
             // Keep the visual effect for a short delay after sorting
@@ -302,11 +331,17 @@ class GameUI {
 
     startStopGame() {
         if (this.intervalId === null) {
+            const now = Date.now();
+            if (!this.gameState.startTime) {
+                this.gameState.startTime = now;
+            } else if (this.gameState.pauseTime) {
+                // Adjust startTime to account for paused duration
+                this.gameState.startTime += (now - this.gameState.pauseTime);
+                this.gameState.pauseTime = null;
+            }
             this.intervalId = setInterval(() => {
-                this.gameState.elapsedTime += 1;
                 this.renderElapsedTime();
                 this.updatePlayerTimers();
-                this.renderPlayers(); // Moved renderPlayers here
             }, 1000);
             this.elements.startStopBtn.innerHTML = "&#10074;&#10074;"; // Pause glyph
             this.elements.startStopBtn.classList.remove('play-button');
@@ -315,6 +350,7 @@ class GameUI {
         } else {
             clearInterval(this.intervalId);
             this.intervalId = null;
+            this.gameState.pauseTime = Date.now();
             this.elements.startStopBtn.innerHTML = "&#9658;"; // Play glyph
             this.elements.startStopBtn.classList.remove('pause-button');
             this.elements.startStopBtn.classList.add('play-button');
@@ -336,12 +372,8 @@ class GameUI {
         }
     }
 
-    sortPlayers(key) {
-        this.gameState.players.sort((a, b) => {
-            if (a[key] > b[key]) return -1;
-            if (a[key] < b[key]) return 1;
-            return 0;
-        });
+    sortPlayers() {
+        this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);
         this.renderPlayers();
     }
 
@@ -366,10 +398,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Handle page visibility changes to preserve timer state
 document.addEventListener('visibilitychange', () => {
-    if (ui && document.hidden && ui.intervalId) {
-        clearInterval(ui.intervalId);
-        ui.intervalId = null;
-    } else if (ui && !document.hidden && game.isRunning && !ui.intervalId) {
-        ui.startStopGame();
+    if (ui) {
+        if (document.hidden && ui.intervalId) {
+            clearInterval(ui.intervalId);
+            ui.intervalId = null;
+        } else if (!document.hidden) {
+            // Force immediate timer update when returning to page
+            ui.renderElapsedTime();
+            ui.updatePlayerTimers();
+            if (game.isRunning && !ui.intervalId) {
+                ui.startStopGame();
+            }
+        }
     }
 });
