@@ -299,38 +299,46 @@ class GameUI {
         this.gameState.players.forEach((player) => {
             if (player.currentStatus === "playing") {
                 player.timeIn = this.gameState.elapsedTime - player.lastSubbedInTime;
-                player.totalTimeIn += 1; // Increment totalTimeIn every second
-
-                // Update the player's timer element directly
+                
+                // Update timer element
                 const timerEl = document.querySelector(`#player-${player.id} .timer`);
                 if (timerEl) {
                     timerEl.innerHTML = `${this.formatTime(player.timeIn)}<br>&nbsp;`;
                 }
 
                 // Update total time in element
-                const totalTimeInEl = document.querySelector(`#player-${player.id} .totalTimeIn`);
-                if (totalTimeInEl) {
-                    totalTimeInEl.textContent = this.formatTime(player.totalTimeIn);
+                const totalTimerEl = document.querySelector(`#player-${player.id} .total-timer`);
+                if (totalTimerEl) {
+                    player.totalTimeIn = player.timeIn;
+                    for (let p of this.gameState.players) {
+                        if (p.id === player.id && p.currentStatus === "playing") {
+                            totalTimerEl.firstElementChild.textContent = this.formatTime(player.totalTimeIn);
+                        }
+                    }
                 }
             } else {
                 player.timeOut = this.gameState.elapsedTime - player.lastSubbedOutTime;
-                player.totalTimeOut += 1; // Increment totalTimeOut every second
-
-                // Update the player's timer element directly
+                
+                // Update timer element
                 const timerEl = document.querySelector(`#player-${player.id} .timer`);
                 if (timerEl) {
                     timerEl.innerHTML = `<br>${this.formatTime(player.timeOut)}`;
                 }
 
                 // Update total time out element
-                const totalTimeOutEl = document.querySelector(`#player-${player.id} .totalTimeOut`);
-                if (totalTimeOutEl) {
-                    totalTimeOutEl.textContent = this.formatTime(player.totalTimeOut);
+                const totalTimerEl = document.querySelector(`#player-${player.id} .total-timer`);
+                if (totalTimerEl) {
+                    player.totalTimeOut = player.timeOut;
+                    for (let p of this.gameState.players) {
+                        if (p.id === player.id && p.currentStatus === "bench") {
+                            totalTimerEl.lastElementChild.textContent = this.formatTime(player.totalTimeOut);
+                        }
+                    }
                 }
             }
         });
         this.gameState.saveState();
-        
+
         if (this.needsSorting) {
             this.sortPlayers();
             this.renderPlayers();
@@ -401,7 +409,7 @@ class GameUI {
                 this.gameState.players.sort((a, b) => a.name.localeCompare(b.name));
                 break;
             case 'timeOut':
-                this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);
+      this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);          this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);
                 break;
             case 'totalTimeOut':
                 this.gameState.players.sort((a, b) => b.totalTimeOut - a.totalTimeOut);
