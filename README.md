@@ -1,2 +1,3 @@
 - Managing the substitutions of 11 kids for 7 positions was harder than I thought.
 - This webapp helps: https://seattleteddy.github.io/playerSub/
+- <img src="https://github.com/user-attachments/assets/be1ed5df-bbf1-4051-a769-a288f4ff07ba" alt="Screenshot" width="280px">
