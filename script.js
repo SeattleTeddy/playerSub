@@ -8,7 +8,7 @@ class GameState {
         this.pauseTime = null; // Track the pause time
         this.savedPlayers = JSON.parse(localStorage.getItem('savedPlayers')) || null;
         if (!this.savedPlayers) {
-            this.players = this.getDefaultPlayers(); // Set default team to default players if no saved team
+            this.resetToSounders(); // Set default team to Sounders if no saved team
         } else {
             this.loadPlayerData(this.savedPlayers);
         }
@@ -146,35 +146,33 @@ class GameState {
     }
 
     resetToSounders() {
-        if (confirm("Are you sure you want to reset to the Sounders team? This will reset the current game.")) {
-            const soundersPlayers = [
-                { name: "Frei", number: 1 },
-                { name: "Roldan", number: 2 },
-                { name: "Gómez Andrade", number: 3 },
-                { name: "Ragen", number: 4 },
-                { name: "Tolo", number: 5 },
-                { name: "Paulo", number: 6 },
-                { name: "Rusnák", number: 7 },
-                { name: "Roldan", number: 8 },
-                { name: "Morris", number: 9 },
-                { name: "Ruidíaz", number: 10 },
-                { name: "Chú", number: 11 }
-            ].map((player, index) => ({
-                id: index + 1,
-                ...player,
-                currentStatus: "bench",
-                subbedInTime: null,
-                subbedOutTime: null,
-                timeIn: 0,
-                timeOut: 0,
-                totalTimeIn: 0,
-                totalTimeOut: 0,
-                lastSubbedInTime: null,
-                lastSubbedOutTime: 0
-            }));
-            this.loadPlayerData(soundersPlayers);
-            this.resetGameState(); // Reset the game state without reloading player data
-        }
+        const soundersPlayers = [
+            { name: "Frei", number: 1 },
+            { name: "Roldan", number: 2 },
+            { name: "Gómez Andrade", number: 3 },
+            { name: "Ragen", number: 4 },
+            { name: "Tolo", number: 5 },
+            { name: "Paulo", number: 6 },
+            { name: "Rusnák", number: 7 },
+            { name: "Roldan", number: 8 },
+            { name: "Morris", number: 9 },
+            { name: "Ruidíaz", number: 10 },
+            { name: "Chú", number: 11 }
+        ].map((player, index) => ({
+            id: index + 1,
+            ...player,
+            currentStatus: "bench",
+            subbedInTime: null,
+            subbedOutTime: null,
+            timeIn: 0,
+            timeOut: 0,
+            totalTimeIn: 0,
+            totalTimeOut: 0,
+            lastSubbedInTime: null,
+            lastSubbedOutTime: 0
+        }));
+        this.loadPlayerData(soundersPlayers);
+        this.resetGameState(); // Reset the game state without reloading player data
     }
 
     resetGameState() {
