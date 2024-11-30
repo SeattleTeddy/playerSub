@@ -109,6 +109,12 @@ class GameUI {
         this.elements.startStopBtn.addEventListener("click", () => this.startStopGame());
         this.elements.resetGameBtn.addEventListener("click", () => this.resetGame());
         this.elements.addPlayerBtn.addEventListener("click", () => this.addPlayer());
+        this.elements.playersList.addEventListener("click", (event) => {
+            if (event.target.classList.contains("name")) {
+                const playerId = event.target.closest(".player").id.split("-")[1];
+                this.editPlayer(playerId);
+            }
+        });
     }
 
     formatTime(seconds) {
@@ -132,6 +138,7 @@ class GameUI {
     renderPlayers() {
         this.elements.playersList.innerHTML = `
             <div class="player header">
+                <div>&nbsp;</div>
                 <div>Player / Status</div>
                 <div>Timer</div>
                 <div>Total In / Total Out</div>
@@ -167,14 +174,14 @@ class GameUI {
                 : '';
 
             playerEl.innerHTML = `
-                <div class="name">
-                    ${pauseButton}
-                    ${player.name}<br>${statusText}
-                    ${playButton}
+                <div>${player.currentStatus === "bench" ? playButton : pauseButton}</div>
+                <div class="name"><strong>${player.name}</strong><br>${statusText}</div>
+                <div class="timer">
+                    ${player.currentStatus === "playing" ? `${this.formatTime(player.timeIn)}<br>&nbsp;` : `<br>${this.formatTime(player.timeOut)}`}
                 </div>
-                <div>${timerText}</div>
-                <div>
-                    <div class="totalTimeIn">${this.formatTime(player.totalTimeIn)}</div><div class="totalTimeOut">${this.formatTime(player.totalTimeOut)}</div>
+                <div class="total-timer">
+                    <div>${this.formatTime(player.totalTimeIn)}</div>
+                    <div>${this.formatTime(player.totalTimeOut)}</div>
                 </div>
             `;
             this.elements.playersList.appendChild(playerEl);
@@ -199,9 +206,6 @@ class GameUI {
             if (player.currentStatus === "bench") {
                 // Subbing in logic
                 player.isRecentlySubbedIn = true;
-                if (player.lastSubbedOutTime !== null) {
-                    player.totalTimeOut += currentTime - player.lastSubbedOutTime;
-                }
                 player.currentStatus = "playing";
                 player.subbedInTime = this.formatTime(currentTime);
                 player.lastSubbedInTime = currentTime;
@@ -209,9 +213,6 @@ class GameUI {
             } else {
                 // Subbing out logic
                 player.isRecentlySubbedOut = true;
-                if (player.lastSubbedInTime !== null) {
-                    player.totalTimeIn += currentTime - player.lastSubbedInTime;
-                }
                 player.currentStatus = "bench";
                 player.subbedOutTime = this.formatTime(currentTime);
                 player.lastSubbedOutTime = currentTime;
@@ -237,17 +238,16 @@ class GameUI {
 
     addPlayer() {
         const name = this.elements.playerNameInput.value.trim();
-        const number = this.elements.playerNumberInput.value.trim();
 
-        if (!name || !number) {
-            alert("Please fill in both name and number.");
+        if (!name) {
+            alert("Please fill in the name.");
             return;
         }
 
         this.gameState.players.push({
             id: this.gameState.players.length + 1,
             name,
-            number,
+            number: this.gameState.players.length + 1, // Assign a default number
             currentStatus: "bench",
             subbedInTime: null,
             subbedOutTime: null,
@@ -260,9 +260,32 @@ class GameUI {
         });
 
         this.elements.playerNameInput.value = "";
-        this.elements.playerNumberInput.value = "";
         this.gameState.saveState();
-        this.renderPlayers();
+        this.sortPlayers();      // Sort the players list
+        this.renderPlayers();    // Render the updated list
+    
+    }
+
+    editPlayer(id) {
+        const player = this.gameState.players.find((p) => p.id === parseInt(id));
+        if (player) {
+            const newName = prompt("Edit player name (Leave empty to delete):", player.name);
+            if (newName !== null) {
+                if (newName.trim() === "") {
+                    if (confirm("Do you want to delete this player?")) {
+                        this.gameState.players = this.gameState.players.filter((p) => p.id !== player.id);
+                        this.gameState.saveState();
+                        this.sortPlayers();      // Sort after deletion
+                        this.renderPlayers();    // Render the updated list
+                    }
+                } else {
+                    player.name = newName.trim();
+                    this.gameState.saveState();
+                    this.sortPlayers();          // Sort if name changes
+                    this.renderPlayers();        // Render the updated list
+                }
+            }
+        }
     }
 
     updatePlayerTimers() {
@@ -372,9 +395,22 @@ class GameUI {
         }
     }
 
-    sortPlayers() {
-        this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);
-        this.renderPlayers();
+    sortPlayers(sortBy = 'timeOut') {
+        switch (sortBy) {
+            case 'name':
+                this.gameState.players.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'timeOut':
+                this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);
+                break;
+            case 'totalTimeOut':
+                this.gameState.players.sort((a, b) => b.totalTimeOut - a.totalTimeOut);
+                break;
+            default:
+                // Default sorting logic if needed
+                break;
+        }
+        //this.renderPlayers();
     }
 
     renderAll() {

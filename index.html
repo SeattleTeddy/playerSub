@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlayerSub v23</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Oxanium', sans-serif;
     }
     .card {
       border: 1px solid #ccc;
@@ -17,7 +18,7 @@
     }
     .header {
       text-align: center;
-      font-size: 1.2em; /* Reduced text size */
+      font-size: 1.2em;
       margin-bottom: 16px;
     }
     .button {
@@ -50,14 +51,10 @@
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
-    .player.playing .name,
-    .player.playing .timer,
-    .player.playing .totalTimeIn {
+    .player.playing {
       background-color: #d4edda;
     }
-    .player.bench .name,
-    .player.bench .timer,
-    .player.bench .totalTimeOut {
+    .player.bench {
       background-color: #f8d7da;
     }
     .sortable {
@@ -71,9 +68,9 @@
       cursor: pointer;
       padding: 4px;
       border-radius: 4px;
-      position: relative; /* Relative positioning for the name/status column */
+      position: relative;
     }
-    .player .timer{
+    .player .timer {
       padding: 4px;
       border-radius: 4px;
     }
@@ -85,7 +82,7 @@
     #elapsedTime {
       font-size: 1.5em;
       font-weight: bold;
-      margin-right: 16px; /* Add space between elapsed time and button */
+      margin-right: 16px;
     }
     .error-message {
       color: #dc3545;
@@ -97,63 +94,60 @@
       display: none;
     }
 
-    /* Visual feedback when a player is clicked */
     .player.clicked {
       animation: click-feedback 0.2s;
     }
 
     @keyframes click-feedback {
       0% {
-        background-color: rgba(0, 123, 255, 0.5); /* Semi-transparent highlight */
+        background-color: rgba(0, 123, 255, 0.5);
       }
       100% {
         background-color: transparent;
       }
     }
 
-    /* Visual feedback when a player is subbed in */
     .player.subbing-in {
       animation: sub-in-feedback 0.3s, sub-in-light 0.3s 0.3s forwards;
     }
 
     @keyframes sub-in-feedback {
       0% {
-        background-color: rgba(40, 167, 69, 0.8); /* Strong green highlight */
+        background-color: rgba(40, 167, 69, 0.8);
       }
       100% {
-        background-color: rgba(40, 167, 69, 0.3); /* Lighter green highlight */
+        background-color: rgba(40, 167, 69, 0.3);
       }
     }
 
     @keyframes sub-in-light {
       0% {
-        background-color: rgba(40, 167, 69, 0.3); /* Lighter green highlight */
+        background-color: rgba(40, 167, 69, 0.3);
       }
       100% {
-        background-color: rgba(40, 167, 69, 0.1); /* Even lighter green highlight */
+        background-color: rgba(40, 167, 69, 0.1);
       }
     }
 
-    /* Visual feedback when a player is subbed out */
     .player.subbing-out {
       animation: sub-out-feedback 0.3s, sub-out-light 0.3s 0.3s forwards;
     }
 
     @keyframes sub-out-feedback {
       0% {
-        background-color: rgba(220, 53, 69, 0.8); /* Strong red highlight */
+        background-color: rgba(220, 53, 69, 0.8);
       }
       100% {
-        background-color: rgba(220, 53, 69, 0.3); /* Lighter red highlight */
+        background-color: rgba(220, 53, 69, 0.3);
       }
     }
 
     @keyframes sub-out-light {
       0% {
-        background-color: rgba(220, 53, 69, 0.3); /* Lighter red highlight */
+        background-color: rgba(220, 53, 69, 0.3);
       }
       100% {
-        background-color: rgba(220, 53, 69, 0.1); /* Even lighter red highlight */
+        background-color: rgba(220, 53, 69, 0.1);
       }
     }
 
@@ -165,81 +159,57 @@
     }
 
     #startStopBtn {
-      width: 40px; /* Set a fixed width */
-      height: 40px; /* Set a fixed height */
+      width: 40px;
+      height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
-      text-align: center; /* Center the glyphs */
-      font-size: 1.5em; /* Adjust font size as needed */
+      text-align: center;
+      font-size: 1.5em;
     }
 
     .play-button {
-      background-color: #28a745; /* Green background for play */
+      background-color: #28a745;
     }
 
     .pause-button {
-      background-color: #f0ad4e; /* Light orange background for pause */
+      background-color: #f0ad4e;
     }
 
     .small-button {
-      position: absolute;
-      width: 24px; /* Increase size */
-      height: 24px; /* Increase size */
+      width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1em; /* Increase font size */
+      font-size: 1em;
       border: none;
-      border-radius: 8px; /* Rounded squares */
+      border-radius: 8px; /* Add rounded corners */
       cursor: pointer;
-      top: 50%; /* Center vertically */
-      transform: translateY(-50%); /* Adjust for exact centering */
     }
 
     .small-play-button {
-      background-color: #28a745; /* Green background for play */
-      right: 0; /* Move closer to the text */
-      padding-right: 5px; /* Add padding to the right */
+      background-color: #28a745;
     }
 
     .small-pause-button {
-      background-color: #f0ad4e; /* Light orange background for pause */
-      left: 0; /* Move closer to the text */
-      padding-left: 5px; /* Add padding to the left */
+      background-color: #f0ad4e;
     }
 
-    @media (max-width: 600px) {
-      .small-play-button {
-        right: 0; /* Adjust position on smaller screens */
-      }
-
-      .small-pause-button {
-        left: 0; /* Adjust position on smaller screens */
-      }
+    .total-timer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-
-    /* Adjust button sizes and positions for mobile devices */
-    @media (max-width: 600px) {
-      #startStopBtn {
-        width: 30px; /* Reduce size for mobile */
-        height: 30px;
-        font-size: 1.2em;
-      }
-
-      .small-button {
-        width: 20px; /* Reduce size for mobile */
-        height: 20px;
-        font-size: 0.9em;
-      }
-
-      .small-play-button {
-        right: 5px; /* Move closer to center */
-      }
-
-      .small-pause-button {
-        left: 5px; /* Move closer to center */
-      }
+    .total-timer div {
+      height: 1em; /* Consistent height for alignment */
+    }
+    .player.header {
+      font-size: 0.5em;
+    }
+    #resetGameBtn {
+      background-color: #dc3545; /* Red color */
     }
   </style>
 </head>
@@ -250,21 +220,19 @@
   </div>
   <div>
     <button class="sortable" onclick="ui.sortPlayers('name')">Name</button>
-    <button class="sortable" onclick="ui.sortPlayers('timeIn')">Time In</button>
     <button class="sortable" onclick="ui.sortPlayers('timeOut')">Time Out</button>
-    <button class="sortable" onclick="ui.sortPlayers('totalTimeIn')">Total Time In</button>
     <button class="sortable" onclick="ui.sortPlayers('totalTimeOut')">Total Time Out</button>
   </div>
   <div id="playersList">
     <div class="player header">
-      <div>Name / Status</div>
+      <div>&nbsp;</div>
+      <div>Player / Status</div>
       <div>Timer</div>
-      <div>Total In / Total Out</div> <!-- Updated label -->
+      <div>Total In / Total Out</div>
     </div>
   </div>
   <div>
     <input id="playerNameInput" type="text" placeholder="Player Name">
-    <input id="playerNumberInput" type="text" placeholder="Player Number">
     <button id="addPlayerBtn" class="button">Add Player</button>
   </div>
   <div class="controls-container">
