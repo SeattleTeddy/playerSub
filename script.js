@@ -6,6 +6,10 @@ class GameState {
         this.isRunning = false; // Add isRunning to track game state
         this.startTime = null; // Track the actual start time
         this.pauseTime = null; // Track the pause time
+        this.savedPlayers = JSON.parse(localStorage.getItem('savedPlayers')) || null;
+        if (!this.savedPlayers) {
+            this.resetToSounders(); // Set default team to Sounders if no saved team
+        }
     }
 
     resetState() {
@@ -22,6 +26,11 @@ class GameState {
         this.isRunning = false; // Reset isRunning state
         this.startTime = null;
         this.pauseTime = null;
+        this.saveState();
+    }
+
+    loadPlayerData(players) {
+        this.players = players;
         this.saveState();
     }
 
@@ -86,6 +95,96 @@ class GameState {
             lastSubbedOutTime: 0
         }));
     }
+
+    saveTeam() {
+        if (confirm("Are you sure you want to save the current team? This will overwrite any previously saved team.")) {
+            const teamToSave = this.players.map(({ id, name, number }) => ({ id, name, number }));
+            localStorage.setItem('savedTeam', JSON.stringify(teamToSave)); // Changed key to 'savedTeam' and saved simplified player data
+            this.savedPlayers = teamToSave;
+        }
+    }
+
+    loadSavedTeam() {
+        const savedTeam = JSON.parse(localStorage.getItem('savedTeam')); // Changed key to 'savedTeam'
+        if (savedTeam && confirm("Are you sure you want to load the saved team? This will reset the current game.")) {
+            // Reset timer-related properties
+            const loadedPlayers = savedTeam.map(player => ({
+                ...player,
+                currentStatus: "bench",
+                subbedInTime: null,
+                subbedOutTime: null,
+                timeIn: 0,
+                timeOut: 0,
+                totalTimeIn: 0,
+                totalTimeOut: 0,
+                lastSubbedInTime: null,
+                lastSubbedOutTime: 0
+            }));
+            this.loadPlayerData(loadedPlayers);
+            this.resetGameState(); // Reset the game state without reloading player data
+        } else {
+            alert("No saved team found.");
+        }
+    }
+
+    resetToSampleTeam() {
+        if (confirm("Are you sure you want to reset to the sample team? This will reset the current game.")) {
+            this.loadPlayerData(this.getDefaultPlayers());
+            this.resetGameState(); // Reset the game state without reloading player data
+        }
+    }
+
+    resetToSounders() {
+        if (confirm("Are you sure you want to reset to the Sounders team? This will reset the current game.")) {
+            const soundersPlayers = [
+                { name: "Frei", number: 1 },
+                { name: "Roldan", number: 2 },
+                { name: "Gómez Andrade", number: 3 },
+                { name: "Ragen", number: 4 },
+                { name: "Tolo", number: 5 },
+                { name: "Paulo", number: 6 },
+                { name: "Rusnák", number: 7 },
+                { name: "Roldan", number: 8 },
+                { name: "Morris", number: 9 },
+                { name: "Ruidíaz", number: 10 },
+                { name: "Chú", number: 11 }
+            ].map((player, index) => ({
+                id: index + 1,
+                ...player,
+                currentStatus: "bench",
+                subbedInTime: null,
+                subbedOutTime: null,
+                timeIn: 0,
+                timeOut: 0,
+                totalTimeIn: 0,
+                totalTimeOut: 0,
+                lastSubbedInTime: null,
+                lastSubbedOutTime: 0
+            }));
+            this.loadPlayerData(soundersPlayers);
+            this.resetGameState(); // Reset the game state without reloading player data
+        }
+    }
+
+    resetGameState() {
+        this.gameHalf = 0;
+        this.elapsedTime = 0;
+        this.isRunning = false;
+        this.startTime = null;
+        this.pauseTime = null;
+
+        // Reset players' timer-related properties
+        this.players.forEach(player => {
+            player.timeIn = 0;
+            player.timeOut = 0;
+            player.totalTimeIn = 0;
+            player.totalTimeOut = 0;
+            player.lastSubbedInTime = null;
+            player.lastSubbedOutTime = 0;
+        });
+
+        this.saveState();
+    }
 }
 
 class GameUI {
@@ -100,9 +199,15 @@ class GameUI {
             playerNameInput: document.getElementById("playerNameInput"),
             playerNumberInput: document.getElementById("playerNumberInput"),
             addPlayerBtn: document.getElementById("addPlayerBtn"),
-            elapsedTime: document.getElementById("elapsedTime")
+            elapsedTime: document.getElementById("elapsedTime"),
+            saveTeamBtn: document.getElementById("saveTeamBtn"),
+            loadSavedTeamBtn: document.getElementById("loadSavedTeamBtn"),
+            resetSampleTeamBtn: document.getElementById("resetSampleTeamBtn"),
+            resetSoundersBtn: document.getElementById("resetSoundersBtn")
         };
         this.bindEvents();
+        this.checkSavedTeam();
+        this.trackChanges();
     }
 
     bindEvents() {
@@ -115,6 +220,26 @@ class GameUI {
                 this.editPlayer(playerId);
             }
         });
+        this.elements.saveTeamBtn.addEventListener("click", () => this.saveTeam());
+        this.elements.loadSavedTeamBtn.addEventListener("click", () => this.loadSavedTeam());
+        this.elements.resetSampleTeamBtn.addEventListener("click", () => this.resetToSampleTeam());
+        this.elements.resetSoundersBtn.addEventListener("click", () => this.resetToSounders());
+    }
+
+    checkSavedTeam() {
+        if (!this.gameState.savedPlayers) {
+            this.elements.resetSampleTeamBtn.classList.add('hidden'); // Hide the "Reset to Sample Team" button if no saved team
+        }
+    }
+
+    trackChanges() {
+        this.originalPlayers = JSON.stringify(this.gameState.players);
+        this.elements.saveTeamBtn.disabled = true;
+    }
+
+    enableSaveButton() {
+        const currentPlayers = JSON.stringify(this.gameState.players);
+        this.elements.saveTeamBtn.disabled = (this.originalPlayers === currentPlayers);
     }
 
     formatTime(seconds) {
@@ -175,7 +300,7 @@ class GameUI {
 
             playerEl.innerHTML = `
                 <div>${player.currentStatus === "bench" ? playButton : pauseButton}</div>
-                <div class="name"><strong>${player.name}</strong><br>${statusText}</div>
+                <div class="name" onclick="ui.editPlayer(${player.id})"><strong>${player.name}</strong><br>${statusText}</div>
                 <div class="timer">
                     ${player.currentStatus === "playing" ? `${this.formatTime(player.timeIn)}<br>&nbsp;` : `<br>${this.formatTime(player.timeOut)}`}
                 </div>
@@ -234,6 +359,7 @@ class GameUI {
                 }, 500);
             }, 200);
         }
+        this.enableSaveButton();
     }
 
     addPlayer() {
@@ -263,7 +389,7 @@ class GameUI {
         this.gameState.saveState();
         this.sortPlayers();      // Sort the players list
         this.renderPlayers();    // Render the updated list
-    
+        this.enableSaveButton();
     }
 
     editPlayer(id) {
@@ -286,6 +412,7 @@ class GameUI {
                 }
             }
         }
+        this.enableSaveButton();
     }
 
     updatePlayerTimers() {
@@ -392,7 +519,7 @@ class GameUI {
 
     resetGame() {
         if (confirm("Are you sure you want to reset the game?")) {
-            this.gameState.resetState(); // Use resetState to clear local storage and reset state
+            this.gameState.resetGameState(); // Call resetGameState instead of resetState to avoid resetting players
             clearInterval(this.intervalId);
             this.intervalId = null;
             this.renderElapsedTime();
@@ -409,7 +536,7 @@ class GameUI {
                 this.gameState.players.sort((a, b) => a.name.localeCompare(b.name));
                 break;
             case 'timeOut':
-      this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);          this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);
+                this.gameState.players.sort((a, b) => b.timeOut - a.timeOut);
                 break;
             case 'totalTimeOut':
                 this.gameState.players.sort((a, b) => b.totalTimeOut - a.totalTimeOut);
@@ -418,12 +545,42 @@ class GameUI {
                 // Default sorting logic if needed
                 break;
         }
-        //this.renderPlayers();
+        //this.renderPlayers(); // Ensure players are rendered after sorting
+    }
+
+    saveTeam() {
+        this.gameState.saveTeam();
+        this.elements.loadSavedTeamBtn.disabled = false;
+        this.trackChanges(); // Reset tracking after saving
+        // this.resetGame(); <!-- Removed to prevent resetting the game after saving -->
+    }
+
+    loadSavedTeam() {
+        this.gameState.loadSavedTeam();
+        this.renderPlayers();
+        this.resetGame(); // Reset the game
+        this.elements.startStopBtn.innerHTML = "&#9658;"; // Play glyph
+        this.elements.startStopBtn.classList.remove('pause-button');
+        this.elements.startStopBtn.classList.add('play-button');
+    }
+
+    resetToSampleTeam() {
+        this.gameState.resetToSampleTeam();
+        this.renderPlayers();
+        this.resetGame(); // Reset the game
+    }
+
+    resetToSounders() {
+        this.gameState.resetToSounders();
+        this.renderPlayers();
+        this.resetGame(); // Reset the game
+        this.trackChanges(); // Reset tracking after resetting to Sounders
     }
 
     renderAll() {
         this.renderElapsedTime();
         this.renderPlayers();
+        this.elements.loadSavedTeamBtn.disabled = !this.gameState.savedPlayers;
     }
 }
 

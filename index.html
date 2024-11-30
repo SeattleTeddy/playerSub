@@ -156,6 +156,7 @@
       justify-content: center;
       align-items: center;
       margin-bottom: 16px;
+      gap: 8px; /* Add spacing between buttons */
     }
 
     #startStopBtn {
@@ -209,19 +210,32 @@
       font-size: 0.5em;
     }
     #resetGameBtn {
-      background-color: #dc3545; /* Red color */
+      background-color: #dc3545;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      font-size: 1.2em;
+    }
+    .hidden {
+      display: none;
+    }
+    .sort-buttons-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
     }
   </style>
 </head>
 <body>
   <div class="controls-container">
     <div id="elapsedTime">0:00</div>
-    <button id="startStopBtn" class="button play-button">&#9658;</button> <!-- Play glyph -->
+    <button id="startStopBtn" class="button play-button">&#9658;</button>
+    <button id="resetGameBtn" class="button">&#8635;</button>
   </div>
-  <div>
-    <button class="sortable" onclick="ui.sortPlayers('name')">Name</button>
-    <button class="sortable" onclick="ui.sortPlayers('timeOut')">Time Out</button>
-    <button class="sortable" onclick="ui.sortPlayers('totalTimeOut')">Total Time Out</button>
+  <div class="sort-buttons-container">
+    <button class="sortable" onclick="ui.sortPlayers('name');ui.renderPlayers()">Name</button>
+    <button class="sortable" onclick="ui.sortPlayers('timeOut');ui.renderPlayers()">Time Out</button>
+    <button class="sortable" onclick="ui.sortPlayers('totalTimeOut');ui.renderPlayers()">Total Time Out</button>
   </div>
   <div id="playersList">
     <div class="player header">
@@ -235,8 +249,11 @@
     <input id="playerNameInput" type="text" placeholder="Player Name">
     <button id="addPlayerBtn" class="button">Add Player</button>
   </div>
-  <div class="controls-container">
-    <button id="resetGameBtn" class="button">Reset Game</button>
+  <div>
+    <button id="saveTeamBtn" class="button">Save Team</button>
+    <button id="loadSavedTeamBtn" class="button" disabled>Load Saved Team</button>
+    <button id="resetSampleTeamBtn" class="button hidden">Reset to Sample Team</button>
+    <button id="resetSoundersBtn" class="button">Reset to Sounders</button>
   </div>
   <script src="script.js"></script>
 </body>
