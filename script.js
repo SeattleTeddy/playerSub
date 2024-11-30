@@ -8,11 +8,15 @@ class GameState {
         this.pauseTime = null; // Track the pause time
         this.savedPlayers = JSON.parse(localStorage.getItem('savedPlayers')) || null;
         if (!this.savedPlayers) {
-            this.resetToSounders(); // Set default team to Sounders if no saved team
+            this.players = this.getDefaultPlayers(); // Set default team to default players if no saved team
+        } else {
+            this.loadPlayerData(this.savedPlayers);
         }
+        console.log('GameState initialized:', this);
     }
 
     resetState() {
+        console.log('Game state is being reset');
         localStorage.removeItem('players'); // Clear players from local storage
         localStorage.removeItem('gameHalf'); // Clear gameHalf from local storage
         localStorage.removeItem('elapsedTime'); // Clear elapsedTime from local storage
@@ -27,15 +31,19 @@ class GameState {
         this.startTime = null;
         this.pauseTime = null;
         this.saveState();
+        console.log('Game state after reset:', this);
     }
 
     loadPlayerData(players) {
+        console.log('Loading player data:', players);
         this.players = players;
         this.saveState();
+        console.log('Player data loaded:', this.players);
     }
 
     loadState() {
         try {
+            console.log('Loading game state from localStorage');
             const players = JSON.parse(localStorage.getItem('players'));
             const gameHalf = JSON.parse(localStorage.getItem('gameHalf'));
             const elapsedTime = JSON.parse(localStorage.getItem('elapsedTime'));
@@ -49,6 +57,7 @@ class GameState {
             this.isRunning = isRunning || false; // Load isRunning state
             this.startTime = startTime ? new Date(startTime) : null;
             this.pauseTime = pauseTime ? new Date(pauseTime) : null;
+            console.log('Game state loaded:', this);
         } catch (error) {
             console.error('Error loading game state:', error);
             this.resetState();
@@ -57,12 +66,14 @@ class GameState {
 
     saveState() {
         try {
+            console.log('Saving game state to localStorage:', this);
             localStorage.setItem('players', JSON.stringify(this.players));
             localStorage.setItem('gameHalf', JSON.stringify(this.gameHalf));
             localStorage.setItem('elapsedTime', JSON.stringify(this.elapsedTime));
             localStorage.setItem('isRunning', JSON.stringify(this.isRunning)); // Save isRunning state
             localStorage.setItem('startTime', JSON.stringify(this.startTime));
             localStorage.setItem('pauseTime', JSON.stringify(this.pauseTime));
+            console.log('Game state saved successfully');
         } catch (error) {
             console.error('Error saving game state:', error);
         }
@@ -185,6 +196,14 @@ class GameState {
 
         this.saveState();
     }
+
+    clearAllData() {
+        if (confirm("Are you sure you want to delete all saved data? This action cannot be undone.")) {
+            localStorage.clear();
+            this.resetState();
+            console.log('All saved data has been cleared.');
+        }
+    }
 }
 
 class GameUI {
@@ -203,7 +222,8 @@ class GameUI {
             saveTeamBtn: document.getElementById("saveTeamBtn"),
             loadSavedTeamBtn: document.getElementById("loadSavedTeamBtn"),
             resetSampleTeamBtn: document.getElementById("resetSampleTeamBtn"),
-            resetSoundersBtn: document.getElementById("resetSoundersBtn")
+            resetSoundersBtn: document.getElementById("resetSoundersBtn"),
+            deleteAllDataBtn: document.getElementById("deleteAllDataBtn")
         };
         this.bindEvents();
         this.checkSavedTeam();
@@ -224,6 +244,7 @@ class GameUI {
         this.elements.loadSavedTeamBtn.addEventListener("click", () => this.loadSavedTeam());
         this.elements.resetSampleTeamBtn.addEventListener("click", () => this.resetToSampleTeam());
         this.elements.resetSoundersBtn.addEventListener("click", () => this.resetToSounders());
+        this.elements.deleteAllDataBtn.addEventListener("click", () => this.deleteAllData());
     }
 
     checkSavedTeam() {
@@ -575,6 +596,12 @@ class GameUI {
         this.renderPlayers();
         this.resetGame(); // Reset the game
         this.trackChanges(); // Reset tracking after resetting to Sounders
+    }
+
+    deleteAllData() {
+        this.gameState.clearAllData();
+        this.renderPlayers();
+        this.resetGame();
     }
 
     renderAll() {
