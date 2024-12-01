@@ -1,5 +1,11 @@
 class GameState {
     constructor() {
+        this.version = '1.0.0'; // Current version of the application
+        const storedVersion = localStorage.getItem('appVersion');
+        if (storedVersion !== this.version) {
+            this.resetState(); // Reset state if versions do not match
+            localStorage.setItem('appVersion', this.version); // Update to the current version
+        }
         this.players = [];
         this.gameHalf = 0;
         this.elapsedTime = 0;
@@ -26,6 +32,7 @@ class GameState {
         localStorage.removeItem('isRunning'); // Clear isRunning from local storage
         localStorage.removeItem('startTime'); // Clear startTime from local storage
         localStorage.removeItem('pauseTime'); // Clear pauseTime from local storage
+        localStorage.removeItem('appVersion'); // Clear appVersion from local storage
 
         this.players = this.getDefaultPlayers();
         this.gameHalf = 0;
@@ -244,8 +251,9 @@ class GameUI {
         this.elements.resetGameBtn.addEventListener("click", () => this.resetGame());
         this.elements.addPlayerBtn.addEventListener("click", () => this.addPlayer());
         this.elements.playersList.addEventListener("click", (event) => {
-            if (event.target.classList.contains("name")) {
-                const playerId = event.target.closest(".player").id.split("-")[1];
+            const nameElement = event.target.closest(".name");
+            if (nameElement) {
+                const playerId = nameElement.closest(".player").id.split("-")[1];
                 this.editPlayer(playerId);
             }
         });
