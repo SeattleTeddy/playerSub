@@ -324,7 +324,7 @@ class GameUI {
 
             playerEl.innerHTML = `
                 <div>${player.currentStatus === "bench" ? playButton : pauseButton}</div>
-                <div class="name" onclick="ui.editPlayer(${player.id})"><strong>${player.name}</strong><br>${statusText}</div>
+                <div class="name">${player.name}<br>${statusText}</div>
                 <div class="timer">
                     ${player.currentStatus === "playing" ? `${this.formatTime(player.timeIn)}<br>&nbsp;` : `<br>${this.formatTime(player.timeOut)}`}
                 </div>
