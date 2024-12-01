@@ -7,11 +7,14 @@ class GameState {
         this.startTime = null; // Track the actual start time
         this.pauseTime = null; // Track the pause time
         this.savedPlayers = JSON.parse(localStorage.getItem('savedPlayers')) || null;
-        if (!this.savedPlayers) {
-            this.resetToSounders(); // Set default team to Sounders if no saved team
+        this.initialTeamState = null; // Add this to store initial team state
+        if (!localStorage.getItem('players')) {
+            this.resetToSounders(); // Load Sounders players if no game state is stored
         } else {
-            this.loadPlayerData(this.savedPlayers);
+            this.loadState(); // Load existing game state
         }
+        // Store initial team state after loading
+        this.initialTeamState = this.players.map(({ id, name, number }) => ({ id, name, number }));
         console.log('GameState initialized:', this);
     }
 
@@ -112,6 +115,7 @@ class GameState {
             const teamToSave = this.players.map(({ id, name, number }) => ({ id, name, number }));
             localStorage.setItem('savedTeam', JSON.stringify(teamToSave)); // Changed key to 'savedTeam' and saved simplified player data
             this.savedPlayers = teamToSave;
+            localStorage.setItem('savedPlayers', JSON.stringify(this.savedPlayers)); // Save the simplified player data
         }
     }
 
@@ -246,19 +250,20 @@ class GameUI {
     }
 
     checkSavedTeam() {
-        if (!this.gameState.savedPlayers) {
-            this.elements.resetSampleTeamBtn.classList.add('hidden'); // Hide the "Reset to Sample Team" button if no saved team
-        }
+        this.elements.loadSavedTeamBtn.disabled = !this.gameState.savedPlayers; // Disable the "Load Saved Team" button if no saved team
     }
 
     trackChanges() {
-        this.originalPlayers = JSON.stringify(this.gameState.players);
-        this.elements.saveTeamBtn.disabled = true;
+        // Compare current players with initial state instead of just storing current state
+        const currentTeam = this.gameState.players.map(({ id, name, number }) => ({ id, name, number }));
+        const initialTeam = this.gameState.initialTeamState;
+        this.elements.saveTeamBtn.disabled = JSON.stringify(currentTeam) === JSON.stringify(initialTeam);
     }
 
     enableSaveButton() {
-        const currentPlayers = JSON.stringify(this.gameState.players);
-        this.elements.saveTeamBtn.disabled = (this.originalPlayers === currentPlayers);
+        const currentTeam = this.gameState.players.map(({ id, name, number }) => ({ id, name, number }));
+        const initialTeam = this.gameState.initialTeamState;
+        this.elements.saveTeamBtn.disabled = JSON.stringify(currentTeam) === JSON.stringify(initialTeam);
     }
 
     formatTime(seconds) {
@@ -378,7 +383,7 @@ class GameUI {
                 }, 500);
             }, 200);
         }
-        this.enableSaveButton();
+        //this.enableSaveButton();
     }
 
     addPlayer() {
@@ -452,15 +457,13 @@ class GameUI {
                     timerEl.innerHTML = `${this.formatTime(player.timeIn)}<br>&nbsp;`;
                 }
 
-                // Update total time in element
+                // Update total time in element - FIX: Accumulate total time
                 const totalTimerEl = document.querySelector(`#player-${player.id} .total-timer`);
                 if (totalTimerEl) {
-                    player.totalTimeIn = player.timeIn;
-                    for (let p of this.gameState.players) {
-                        if (p.id === player.id && p.currentStatus === "playing") {
-                            totalTimerEl.firstElementChild.textContent = this.formatTime(player.totalTimeIn);
-                        }
+                    if (player.timeIn > 0) {
+                        player.totalTimeIn = (player.totalTimeIn || 0) + 1; // Increment by 1 second
                     }
+                    totalTimerEl.firstElementChild.textContent = this.formatTime(player.totalTimeIn);
                 }
             } else {
                 player.timeOut = this.gameState.elapsedTime - player.lastSubbedOutTime;
@@ -471,15 +474,13 @@ class GameUI {
                     timerEl.innerHTML = `<br>${this.formatTime(player.timeOut)}`;
                 }
 
-                // Update total time out element
+                // Update total time out element - FIX: Accumulate total time
                 const totalTimerEl = document.querySelector(`#player-${player.id} .total-timer`);
                 if (totalTimerEl) {
-                    player.totalTimeOut = player.timeOut;
-                    for (let p of this.gameState.players) {
-                        if (p.id === player.id && p.currentStatus === "bench") {
-                            totalTimerEl.lastElementChild.textContent = this.formatTime(player.totalTimeOut);
-                        }
+                    if (player.timeOut > 0) {
+                        player.totalTimeOut = (player.totalTimeOut || 0) + 1; // Increment by 1 second
                     }
+                    totalTimerEl.lastElementChild.textContent = this.formatTime(player.totalTimeOut);
                 }
             }
         });
@@ -569,7 +570,7 @@ class GameUI {
 
     saveTeam() {
         this.gameState.saveTeam();
-        this.elements.loadSavedTeamBtn.disabled = false;
+        this.elements.loadSavedTeamBtn.disabled = false; // Ensure the button is enabled after saving a team
         this.trackChanges(); // Reset tracking after saving
         // this.resetGame(); <!-- Removed to prevent resetting the game after saving -->
     }
@@ -605,13 +606,12 @@ class GameUI {
     renderAll() {
         this.renderElapsedTime();
         this.renderPlayers();
-        this.elements.loadSavedTeamBtn.disabled = !this.gameState.savedPlayers;
+        //this.elements.loadSavedTeamBtn.disabled = !this.gameState.savedPlayers;
     }
 }
 
 // Initialize the application
 let game = new GameState();
-game.loadState();
 
 document.addEventListener('DOMContentLoaded', () => {
     ui = new GameUI(game);
