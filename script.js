@@ -146,37 +146,41 @@ class GameState {
         if (confirm("Are you sure you want to reset to the sample team? This will reset the current game.")) {
             this.loadPlayerData(this.getDefaultPlayers());
             this.resetGameState(); // Reset the game state without reloading player data
+            ui.resetTimer(); // Reset the timer and go into the pause state
         }
     }
 
     resetToSounders() {
-        const soundersPlayers = [
-            { name: "Frei", number: 1 },
-            { name: "Roldan", number: 2 },
-            { name: "Gómez Andrade", number: 3 },
-            { name: "Ragen", number: 4 },
-            { name: "Tolo", number: 5 },
-            { name: "Paulo", number: 6 },
-            { name: "Rusnák", number: 7 },
-            { name: "Roldan", number: 8 },
-            { name: "Morris", number: 9 },
-            { name: "Ruidíaz", number: 10 },
-            { name: "Chú", number: 11 }
-        ].map((player, index) => ({
-            id: index + 1,
-            ...player,
-            currentStatus: "bench",
-            subbedInTime: null,
-            subbedOutTime: null,
-            timeIn: 0,
-            timeOut: 0,
-            totalTimeIn: 0,
-            totalTimeOut: 0,
-            lastSubbedInTime: null,
-            lastSubbedOutTime: 0
-        }));
-        this.loadPlayerData(soundersPlayers);
-        this.resetGameState(); // Reset the game state without reloading player data
+        if (confirm("Are you sure you want to reset to the Sounders team? This will reset the current game.")) {
+            const soundersPlayers = [
+                { name: "Frei", number: 1 },
+                { name: "Roldan", number: 2 },
+                { name: "Gómez Andrade", number: 3 },
+                { name: "Ragen", number: 4 },
+                { name: "Tolo", number: 5 },
+                { name: "Paulo", number: 6 },
+                { name: "Rusnák", number: 7 },
+                { name: "Roldan", number: 8 },
+                { name: "Morris", number: 9 },
+                { name: "Ruidíaz", number: 10 },
+                { name: "Chú", number: 11 }
+            ].map((player, index) => ({
+                id: index + 1,
+                ...player,
+                currentStatus: "bench",
+                subbedInTime: null,
+                subbedOutTime: null,
+                timeIn: 0,
+                timeOut: 0,
+                totalTimeIn: 0,
+                totalTimeOut: 0,
+                lastSubbedInTime: null,
+                lastSubbedOutTime: 0
+            }));
+            this.loadPlayerData(soundersPlayers);
+            this.resetGameState(); // Reset the game state without reloading player data
+            ui.resetTimer(); // Reset the timer and go into the pause state
+        }
     }
 
     resetGameState() {
@@ -203,6 +207,9 @@ class GameState {
         if (confirm("Are you sure you want to delete all saved data? This action cannot be undone.")) {
             localStorage.clear();
             this.resetState();
+            ui.resetTimer(); 
+            //ui.renderElapsedTime();
+            //ui.updatePlayerTimers();
             console.log('All saved data has been cleared.');
         }
     }
@@ -288,7 +295,7 @@ class GameUI {
         this.elements.playersList.innerHTML = `
             <div class="player header">
                 <div>&nbsp;</div>
-                <div>Player / Status</div>
+                <div>Player / Status <br><small><strong>(touch to edit)</strong></small></div>
                 <div>Timer</div>
                 <div>Total In / Total Out</div>
             </div>
@@ -341,6 +348,8 @@ class GameUI {
         const player = this.gameState.players.find((p) => p.id === id);
         if (player) {
             const currentTime = this.gameState.elapsedTime;
+            //player.timeIn = this.gameState.elapsedTime - player.lastSubbedInTime;
+            //player.timeOut = this.gameState.elapsedTime - player.lastSubbedOutTime;
 
             // Add visual feedback BEFORE state changes and sorting
             const playerEl = document.getElementById(`player-${id}`);
@@ -358,6 +367,7 @@ class GameUI {
                 player.currentStatus = "playing";
                 player.subbedInTime = this.formatTime(currentTime);
                 player.lastSubbedInTime = currentTime;
+                player.totalTimeOut += (this.gameState.elapsedTime - player.lastSubbedOutTime); // Update totalTimeOut
                 player.timeOut = 0;
             } else {
                 // Subbing out logic
@@ -365,6 +375,7 @@ class GameUI {
                 player.currentStatus = "bench";
                 player.subbedOutTime = this.formatTime(currentTime);
                 player.lastSubbedOutTime = currentTime;
+                player.totalTimeIn += (this.gameState.elapsedTime - player.lastSubbedInTime); // Update totalTimeIn
                 player.timeIn = 0;
             }
 
@@ -460,10 +471,8 @@ class GameUI {
                 // Update total time in element - FIX: Accumulate total time
                 const totalTimerEl = document.querySelector(`#player-${player.id} .total-timer`);
                 if (totalTimerEl) {
-                    if (player.timeIn > 0) {
-                        player.totalTimeIn = (player.totalTimeIn || 0) + 1; // Increment by 1 second
-                    }
-                    totalTimerEl.firstElementChild.textContent = this.formatTime(player.totalTimeIn);
+                    //player.totalTimeIn = (player.totalTimeIn || 0) + player.timeIn; // Accumulate total time in
+                    totalTimerEl.firstElementChild.textContent = this.formatTime(player.totalTimeIn + player.timeIn);
                 }
             } else {
                 player.timeOut = this.gameState.elapsedTime - player.lastSubbedOutTime;
@@ -478,12 +487,11 @@ class GameUI {
                 const totalTimerEl = document.querySelector(`#player-${player.id} .total-timer`);
                 if (totalTimerEl) {
                     if (player.timeOut > 0) {
-                        player.totalTimeOut = (player.totalTimeOut || 0) + 1; // Increment by 1 second
+                        //player.totalTimeOut = (player.totalTimeOut || 0) + player.timeOut; // Accumulate total time out
+                        totalTimerEl.lastElementChild.textContent = this.formatTime(player.totalTimeOut + player.timeOut);
                     }
-                    totalTimerEl.lastElementChild.textContent = this.formatTime(player.totalTimeOut);
-                }
-            }
-        });
+        }
+        }});
         this.gameState.saveState();
 
         if (this.needsSorting) {
@@ -587,20 +595,37 @@ class GameUI {
     resetToSampleTeam() {
         this.gameState.resetToSampleTeam();
         this.renderPlayers();
-        this.resetGame(); // Reset the game
+        // this.resetGame(); // Remove this line to avoid the additional prompt
+        //this.resetTimer(); // Reset the timer and go into the pause state
     }
 
     resetToSounders() {
         this.gameState.resetToSounders();
         this.renderPlayers();
-        this.resetGame(); // Reset the game
+        // this.resetGame(); // Remove this line to avoid the additional prompt
         this.trackChanges(); // Reset tracking after resetting to Sounders
+        //this.resetTimer(); // Reset the timer and go into the pause state
     }
 
     deleteAllData() {
         this.gameState.clearAllData();
         this.renderPlayers();
-        this.resetGame();
+        // this.resetGame(); // Remove this line to avoid the additional prompt
+        //this.resetTimer(); // Reset the timer and go into the pause state
+    }
+
+    resetTimer() {
+        console.log('Resetting the timer');
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+        this.gameState.isRunning = false;
+        this.gameState.startTime = null;
+        this.gameState.pauseTime = null;
+        this.renderElapsedTime();
+        this.elements.startStopBtn.innerHTML = "&#9658;"; // Play glyph
+        this.elements.startStopBtn.classList.remove('pause-button');
+        this.elements.startStopBtn.classList.add('play-button');
+        console.log('Timer reset complete');
     }
 
     renderAll() {

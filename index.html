@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlayerSub v58</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PlayerSub v59</title>
   <link href="https://fonts.googleapis.com/css2?family=Oxanium&display=swap" rel="stylesheet">
   <style>
     body {
@@ -18,7 +18,7 @@
     }
     .header {
       text-align: center;
-      font-size: 1.2em;
+      font-size: 1.3em;
       margin-bottom: 16px;
     }
     .button {
@@ -210,7 +210,7 @@
       height: 1em; /* Consistent height for alignment */
     }
     .player.header {
-      font-size: 0.5em;
+      font-size: 0.6em;
     }
     #resetGameBtn {
       background-color: #dc3545;
@@ -226,6 +226,9 @@
       display: flex;
       justify-content: center;
       margin-bottom: 16px;
+    }
+    #resetSoundersBtn {
+      background-color: #5cb85c; /* Sounders green */
     }
   </style>
 </head>
@@ -243,7 +246,7 @@
   <div id="playersList">
     <div class="player header">
       <div>&nbsp;</div>
-      <div>Player / Status</div>
+      <div>Player / Status <br><small>(touch to edit)</small></div>
       <div>Timer</div>
       <div>Total In / Total Out</div>
     </div>
@@ -256,7 +259,7 @@
     <button id="saveTeamBtn" class="button hidden">Save Team</button>
     <button id="loadSavedTeamBtn" class="button hidden">Load Saved Team</button>
     <button id="resetSampleTeamBtn" class="button hidden">Reset to Sample Team</button>
-    <button id="resetSoundersBtn" class="button">Reset to Sounders</button>
+    <button id="resetSoundersBtn" class="button">Reset to Sounders</button><br>
     <button id="deleteAllDataBtn" class="button" style="background-color: #dc3545;">Delete all saved data</button>
   </div>
   <script src="script.js"></script>
