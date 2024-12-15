@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PlayerSub v60</title>
+  <title>PlayerSub v59</title>
   <link href="https://fonts.googleapis.com/css2?family=Oxanium&display=swap" rel="stylesheet">
   <style>
     body {
@@ -45,20 +45,16 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 4px 0;  /* reduced from 8px */
-      padding: 4px;   /* reduced from 8px */
-      background-color: #f9f9f9;
+      margin: 4px 0;
+      padding: 4px;
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     .player.playing {
-      background-color: #d4edda;
+      background-color: #d4edda; /* Light green */
     }
     .player.bench {
-      background-color: #f8d7da;
-    }
-    .sortable {
-      cursor: pointer;
+      background-color: #f8d7da; /* Light red */
     }
     .player div {
       flex: 1;
@@ -73,7 +69,6 @@
     .player .timer {
       padding: 4px;
       border-radius: 4px;
-      
     }
     .player .totalTimeIn,
     .player .totalTimeOut {
@@ -108,56 +103,12 @@
       }
     }
 
-    .player.subbing-in {
-      animation: sub-in-feedback 0.3s, sub-in-light 0.3s 0.3s forwards;
-    }
-
-    @keyframes sub-in-feedback {
-      0% {
-        background-color: rgba(40, 167, 69, 0.8);
-      }
-      100% {
-        background-color: rgba(40, 167, 69, 0.3);
-      }
-    }
-
-    @keyframes sub-in-light {
-      0% {
-        background-color: rgba(40, 167, 69, 0.3);
-      }
-      100% {
-        background-color: rgba(40, 167, 69, 0.1);
-      }
-    }
-
-    .player.subbing-out {
-      animation: sub-out-feedback 0.3s, sub-out-light 0.3s 0.3s forwards;
-    }
-
-    @keyframes sub-out-feedback {
-      0% {
-        background-color: rgba(220, 53, 69, 0.8);
-      }
-      100% {
-        background-color: rgba(220, 53, 69, 0.3);
-      }
-    }
-
-    @keyframes sub-out-light {
-      0% {
-        background-color: rgba(220, 53, 69, 0.3);
-      }
-      100% {
-        background-color: rgba(220, 53, 69, 0.1);
-      }
-    }
-
     .controls-container {
       display: flex;
       justify-content: center;
       align-items: center;
       margin-bottom: 16px;
-      gap: 8px; /* Add spacing between buttons */
+      gap: 8px;
     }
 
     #startStopBtn {
@@ -179,16 +130,16 @@
     }
 
     .small-button {
-      width: 30px; /* Increased from default */
-      height: 30px; /* Increased from default */
+      width: 30px;
+      height: 30px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.4em; /* Increased from 1em */
+      font-size: 1.4em;
       border: none;
-      border-radius: 8px; /* Add rounded corners */
+      border-radius: 8px;
       cursor: pointer;
-      color: #000; /* Black glyphs */
+      color: #000;
       padding: 0;
       line-height: 1;
     }
@@ -204,16 +155,11 @@
     .total-timer {
       display: flex;
       flex-direction: column;
-      align-items: left;
-      justify-content: left;
-      
+      align-items: center;
+      justify-content: center;
     }
     .total-timer div {
-      height: 1em; /* Consistent height for alignment */
-            display: flex;
-      flex-direction: column;
-      align-items: left;
-      justify-content: left;
+      height: 1em;
     }
     .player.header {
       font-size: 0.6em;
@@ -228,20 +174,8 @@
     .hidden {
       display: none;
     }
-    .sort-buttons-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 16px;
-    }
     #resetSoundersBtn {
-      background-color: #5cb85c; /* Sounders green */
-    }
-    .center-buttons {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 16px;
-      gap: 8px;
+      background-color: #5cb85c; 
     }
   </style>
 </head>
@@ -251,11 +185,12 @@
     <button id="startStopBtn" class="button play-button">&#9658;</button>
     <button id="resetGameBtn" class="button">&#8635;</button>
   </div>
-  <div class="sort-buttons-container">
-    <button class="sortable" onclick="ui.sortPlayers('name');ui.renderPlayers()">Name</button>
-    <button class="sortable" onclick="ui.sortPlayers('timeOut');ui.renderPlayers()">Time Out</button>
-    <button class="sortable" onclick="ui.sortPlayers('totalTimeOut');ui.renderPlayers()">Total Time Out</button>
+
+  <!-- Removed sort buttons. Instead, display a note -->
+  <div style="text-align:center; margin-bottom: 16px;">
+    Sorted by playing time, from least at the top to most at the bottom.
   </div>
+
   <div id="playersList">
     <div class="player header">
       <div>&nbsp;</div>
@@ -264,7 +199,7 @@
       <div>Total In / Total Out</div>
     </div>
   </div>
-  <div class="center-buttons">
+  <div>
     <input id="playerNameInput" type="text" placeholder="Player Name">
     <button id="addPlayerBtn" class="button">Add Player</button>
   </div>
@@ -272,11 +207,7 @@
     <button id="saveTeamBtn" class="button hidden">Save Team</button>
     <button id="loadSavedTeamBtn" class="button hidden">Load Saved Team</button>
     <button id="resetSampleTeamBtn" class="button hidden">Reset to Sample Team</button>
-  </div>
-  <div class="center-buttons">
-    <button id="resetSoundersBtn" class="button">Reset to Sounders</button>
-  </div>
-  <div class="center-buttons">
+    <button id="resetSoundersBtn" class="button">Reset to Sounders</button><br>
     <button id="deleteAllDataBtn" class="button" style="background-color: #dc3545;">Delete all saved data</button>
   </div>
   <script src="script.js"></script>
