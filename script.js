@@ -372,7 +372,7 @@ class GameUI {
                 <div class="timer">${timerHtml}</div>
                 <div class="total-timer">
                     <div><span class="glyph-container">▶</span> ${this.formatTime(displayTotalIn)}</div>
-                    <div><span class="glyph-container">⏸</span> ${this.formatTime(displayTotalOut)}</div>
+                    <div><span class="glyph-container">&#x23F8;</span> ${this.formatTime(displayTotalOut)}</div>
                 </div>
             `;
 
