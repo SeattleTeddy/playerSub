@@ -9,18 +9,6 @@
     body {
       font-family: 'Oxanium', sans-serif;
     }
-    .card {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    .header {
-      text-align: center;
-      font-size: 1.3em;
-      margin-bottom: 16px;
-    }
     .button {
       display: inline-block;
       padding: 8px 16px;
@@ -35,12 +23,6 @@
       background-color: #ccc;
       cursor: not-allowed;
     }
-    .input {
-      padding: 8px;
-      margin-right: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
     .player {
       display: flex;
       justify-content: space-between;
@@ -49,86 +31,50 @@
       padding: 4px;
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
     }
     .player.playing {
-      background-color: #d4edda; /* Light green */
+      background-color: #d4edda;
     }
     .player.bench {
-      background-color: #f8d7da; /* Light red */
+      background-color: #f8d7da;
     }
-    .player div {
-      flex: 1;
-      text-align: center;
+    .player.subbing-in {
+      animation: sub-in-feedback 0.3s, sub-in-light 0.3s 0.3s forwards;
     }
-    .player .name {
+    @keyframes sub-in-feedback {
+      0% { background-color: rgba(40, 167, 69, 0.8); }
+      100% { background-color: rgba(40, 167, 69, 0.3); }
+    }
+    @keyframes sub-in-light {
+      0% { background-color: rgba(40, 167, 69, 0.3); }
+      100% { background-color: transparent; }
+    }
+    .player.subbing-out {
+      animation: sub-out-feedback 0.3s, sub-out-light 0.3s 0.3s forwards;
+    }
+    @keyframes sub-out-feedback {
+      0% { background-color: rgba(220, 53, 69, 0.8); }
+      100% { background-color: rgba(220, 53, 69, 0.3); }
+    }
+    @keyframes sub-out-light {
+      0% { background-color: rgba(220, 53, 69, 0.3); }
+      100% { background-color: transparent; }
+    }
+    .player.header {
+      font-size: 0.6em;
+      background: #e9ecef;
+      font-weight: bold;
+    }
+    .name {
       cursor: pointer;
       padding: 4px;
       border-radius: 4px;
-      position: relative;
     }
-    .player .timer {
-      padding: 4px;
-      border-radius: 4px;
-    }
-    .player .totalTimeIn,
-    .player .totalTimeOut {
-      padding: 2px;
-      border-radius: 2px;
-    }
-    #elapsedTime {
-      font-size: 2.5em;
-      font-weight: bold;
-      margin-right: 16px;
-    }
-    .error-message {
-      color: #dc3545;
-      background-color: #f8d7da;
-      border: 1px solid #f5c6cb;
-      padding: 8px;
-      margin: 8px 0;
-      border-radius: 4px;
-      display: none;
-    }
-
-    .player.clicked {
-      animation: click-feedback 0.2s;
-    }
-
-    @keyframes click-feedback {
-      0% {
-        background-color: rgba(0, 123, 255, 0.5);
-      }
-      100% {
-        background-color: transparent;
-      }
-    }
-
-    .controls-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 16px;
-      gap: 8px;
-    }
-
-    #startStopBtn {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    .timer, .total-timer {
       text-align: center;
-      font-size: 1.5em;
     }
-
-    .play-button {
-      background-color: #28a745;
-    }
-
-    .pause-button {
-      background-color: #f0ad4e;
-    }
-
     .small-button {
       width: 30px;
       height: 30px;
@@ -143,26 +89,50 @@
       padding: 0;
       line-height: 1;
     }
-
     .small-play-button {
       background-color: #28a745;
     }
-
     .small-pause-button {
       background-color: #f0ad4e;
     }
-
+    .controls-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+    #startStopBtn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 1.5em;
+    }
+    .play-button {
+      background-color: #28a745;
+    }
+    .pause-button {
+      background-color: #f0ad4e;
+    }
     .total-timer {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      font-family: monospace;
     }
     .total-timer div {
-      height: 1em;
+      width: 12ch;
+      display: flex;
+      align-items: center;
     }
-    .player.header {
-      font-size: 0.6em;
+    .glyph-container {
+      display: inline-block;
+      width: 2ch;
+      text-align: left;
     }
     #resetGameBtn {
       background-color: #dc3545;
@@ -171,11 +141,18 @@
       padding: 0;
       font-size: 1.2em;
     }
-    .hidden {
-      display: none;
+    #elapsedTime {
+      font-size: 2.5em;
+      font-weight: bold;
+      margin-right: 16px;
     }
     #resetSoundersBtn {
-      background-color: #5cb85c; 
+      background-color: #28a745;
+      color: #fff;
+    }
+    #resetSampleTeamBtn {
+      background-color: #ff9800;
+      color: #fff;
     }
   </style>
 </head>
@@ -186,9 +163,8 @@
     <button id="resetGameBtn" class="button">&#8635;</button>
   </div>
 
-  <!-- Removed sort buttons. Instead, display a note -->
   <div style="text-align:center; margin-bottom: 16px;">
-    Sorted by playing time, from least at the top to most at the bottom.
+    Sorted by total playing time in, from least at the top to most at the bottom.
   </div>
 
   <div id="playersList">
@@ -204,9 +180,7 @@
     <button id="addPlayerBtn" class="button">Add Player</button>
   </div>
   <div>
-    <button id="saveTeamBtn" class="button hidden">Save Team</button>
-    <button id="loadSavedTeamBtn" class="button hidden">Load Saved Team</button>
-    <button id="resetSampleTeamBtn" class="button hidden">Reset to Sample Team</button>
+    <button id="resetSampleTeamBtn" class="button">Reset to Sample Team</button>
     <button id="resetSoundersBtn" class="button">Reset to Sounders</button><br>
     <button id="deleteAllDataBtn" class="button" style="background-color: #dc3545;">Delete all saved data</button>
   </div>
