@@ -21,19 +21,25 @@ class GameState {
             const gameHalf = JSON.parse(localStorage.getItem('gameHalf'));
             const elapsedTime = JSON.parse(localStorage.getItem('elapsedTime'));
             const isRunning = JSON.parse(localStorage.getItem('isRunning'));
-            const startTime = JSON.parse(localStorage.getItem('startTime'));
-            const pauseTime = JSON.parse(localStorage.getItem('pauseTime'));
+
+            // const startTime = localStorage.getItem('startTime');
+            // const pauseTime = localStorage.getItem('pauseTime');
+          
 
             this.players = players || this.getDefaultPlayers();
             this.gameHalf = gameHalf || 0;
             this.elapsedTime = elapsedTime || 0;
             this.isRunning = isRunning || false;
-            this.startTime = startTime ? new Date(startTime) : null;
-            this.pauseTime = pauseTime ? new Date(pauseTime) : null;
+            
+              // Just parse them as integers, not as Dates:
+            this.startTime = localStorage.getItem('startTime') ? parseInt(localStorage.getItem('startTime'), 10) : null;
+            this.pauseTime = localStorage.getItem('pauseTime') ? parseInt(localStorage.getItem('pauseTime'), 10) : null;
+
         } catch (error) {
             this.resetStateToTimersOnly();
         }
     }
+    
 
     saveState() {
         try {
@@ -41,8 +47,12 @@ class GameState {
             localStorage.setItem('gameHalf', JSON.stringify(this.gameHalf));
             localStorage.setItem('elapsedTime', JSON.stringify(this.elapsedTime));
             localStorage.setItem('isRunning', JSON.stringify(this.isRunning));
-            localStorage.setItem('startTime', JSON.stringify(this.startTime));
-            localStorage.setItem('pauseTime', JSON.stringify(this.pauseTime));
+            //localStorage.setItem('startTime', JSON.stringify(this.startTime));
+            //localStorage.setItem('pauseTime', JSON.stringify(this.pauseTime));
+            // Instead of storing them as Date strings, store them as numeric timestamps:
+            localStorage.setItem('startTime', this.startTime !== null ? this.startTime : null);
+            localStorage.setItem('pauseTime', this.pauseTime !== null ? this.pauseTime : null);
+
         } catch (error) {
             console.error('Error saving game state:', error);
         }
@@ -158,8 +168,18 @@ class GameUI {
         };
         this.bindEvents();
         this.renderPlayers(); 
+
+        // Add this logic:
         if (this.gameState.isRunning) {
+            // Game was running before the refresh, so continue running
+            this.elements.startStopBtn.innerHTML = "&#10074;&#10074;";
             this.startTimers();
+        } else {
+            // Game was paused before the refresh
+            this.elements.startStopBtn.innerHTML = "&#9658;"; // Ensure the correct button icon if needed
+            // Explicitly re-render elapsed time and update player timers to reflect paused state
+            this.renderElapsedTime();
+            this.updatePlayerTimers();
         }
     }
 
@@ -225,12 +245,19 @@ class GameUI {
     }
 
     renderElapsedTime() {
+        if (!this.gameState.startTime) {
+            // If startTime is invalid, reset the display to 0:00
+            this.elements.elapsedTime.textContent = "0:00";
+            return;
+        }
+    
         const now = Date.now();
         if (this.gameState.isRunning) {
             this.gameState.elapsedTime = Math.floor((now - this.gameState.startTime) / 1000);
         }
         const minutes = Math.floor(this.gameState.elapsedTime / 60);
         const seconds = this.gameState.elapsedTime % 60;
+    
         this.elements.elapsedTime.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
 
@@ -253,22 +280,41 @@ class GameUI {
     }
     
     startStopGame() {
+        const now = Date.now();
+    
         if (this.intervalId === null) {
-            const now = Date.now();
-            if (!this.gameState.startTime) {
-                this.gameState.startTime = now;
-            } else if (this.gameState.pauseTime) {
-                this.gameState.startTime += (now - this.gameState.pauseTime);
+            // Game is currently paused or hasn't started. We are starting or resuming.
+            if (this.gameState.pauseTime && this.gameState.elapsedTime) {
+                // We were paused, so recalculate startTime so that elapsedTime picks up where we left off
+                // elapsedTime is in seconds, so convert to milliseconds
+                this.gameState.startTime = now - (this.gameState.elapsedTime * 1000);
                 this.gameState.pauseTime = null;
+            } else if (!this.gameState.startTime) {
+                // New start
+                this.gameState.startTime = now;
+                this.gameState.elapsedTime = 0; // reset or ensure zero if starting fresh
             }
+    
             this.startTimers();
-            this.elements.startStopBtn.innerHTML = "&#10074;&#10074;";
+            this.elements.startStopBtn.innerHTML = "&#10074;&#10074;"; // pause icon
             this.gameState.isRunning = true;
+    
         } else {
-            this.stopGame();
+            // Game is currently running. We are pausing.
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+    
+            // Calculate elapsed time at the pause moment
+            this.gameState.elapsedTime = Math.floor((now - this.gameState.startTime) / 1000);
+    
+            this.elements.startStopBtn.innerHTML = "&#9658;"; // play icon
+            this.gameState.isRunning = false;
+            this.gameState.pauseTime = now; // Store the pause time as a number
         }
+    
         this.gameState.saveState();
     }
+    
 
     stopGame() {
         if (this.intervalId !== null) {
