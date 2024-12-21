@@ -38,7 +38,7 @@
       background-color: #d4edda;
     }
     .player.bench {
-      background-color: #f8d7da;
+      background-color: #ffe5b4;
     }
     .player.subbing-in {
       animation: sub-in-feedback 0.3s, sub-in-light 0.3s 0.3s forwards;
@@ -66,6 +66,10 @@
       font-size: 0.6em;
       background: #e9ecef;
       font-weight: bold;
+      text-align: left;
+    }
+    .player.header div {
+      text-align: left;
     }
     .name {
       cursor: pointer;
@@ -126,14 +130,16 @@
       font-family: monospace;
     }
     .total-timer div {
-      width: 12ch;
+      width: 14ch;
       display: flex;
       align-items: center;
+      justify-content: flex-start;
+    }
+    .arc-svg {
+      display: none; /* Hide arc SVGs */
     }
     .glyph-container {
-      display: inline-block;
-      width: 2ch;
-      text-align: left;
+      display: none; /* Hide play/pause glyphs */
     }
     #resetGameBtn {
       background-color: #dc3545;
@@ -170,7 +176,7 @@
 
   <div id="playersList">
     <div class="player header">
-      <div>&nbsp;</div>
+      <div>Command</div>
       <div>Player / Status <br><small>(touch to edit)</small></div>
       <div>Timer</div>
       <div>Total In / Total Out</div>

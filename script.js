@@ -22,16 +22,11 @@ class GameState {
             const elapsedTime = JSON.parse(localStorage.getItem('elapsedTime'));
             const isRunning = JSON.parse(localStorage.getItem('isRunning'));
 
-            // const startTime = localStorage.getItem('startTime');
-            // const pauseTime = localStorage.getItem('pauseTime');
-          
-
             this.players = players || this.getDefaultPlayers();
             this.gameHalf = gameHalf || 0;
             this.elapsedTime = elapsedTime || 0;
             this.isRunning = isRunning || false;
             
-              // Just parse them as integers, not as Dates:
             this.startTime = localStorage.getItem('startTime') ? parseInt(localStorage.getItem('startTime'), 10) : null;
             this.pauseTime = localStorage.getItem('pauseTime') ? parseInt(localStorage.getItem('pauseTime'), 10) : null;
 
@@ -39,7 +34,6 @@ class GameState {
             this.resetStateToTimersOnly();
         }
     }
-    
 
     saveState() {
         try {
@@ -47,9 +41,6 @@ class GameState {
             localStorage.setItem('gameHalf', JSON.stringify(this.gameHalf));
             localStorage.setItem('elapsedTime', JSON.stringify(this.elapsedTime));
             localStorage.setItem('isRunning', JSON.stringify(this.isRunning));
-            //localStorage.setItem('startTime', JSON.stringify(this.startTime));
-            //localStorage.setItem('pauseTime', JSON.stringify(this.pauseTime));
-            // Instead of storing them as Date strings, store them as numeric timestamps:
             localStorage.setItem('startTime', this.startTime !== null ? this.startTime : null);
             localStorage.setItem('pauseTime', this.pauseTime !== null ? this.pauseTime : null);
 
@@ -169,17 +160,13 @@ class GameUI {
         this.bindEvents();
         this.renderPlayers(); 
 
-        // Add this logic:
         if (this.gameState.isRunning) {
-            // Game was running before the refresh, so continue running
             this.elements.startStopBtn.innerHTML = "&#10074;&#10074;";
             this.startTimers();
         } else {
-            // Game was paused before the refresh
-            this.elements.startStopBtn.innerHTML = "&#9658;"; // Ensure the correct button icon if needed
-            // Explicitly re-render elapsed time and update player timers to reflect paused state
+            this.elements.startStopBtn.innerHTML = "&#9658;";
             this.renderElapsedTime();
-            this.updatePlayerTimers();
+            this.renderPlayers();
         }
     }
 
@@ -246,7 +233,6 @@ class GameUI {
 
     renderElapsedTime() {
         if (!this.gameState.startTime) {
-            // If startTime is invalid, reset the display to 0:00
             this.elements.elapsedTime.textContent = "0:00";
             return;
         }
@@ -262,19 +248,10 @@ class GameUI {
     }
 
     updatePlayerTimers() {
-        if (!this.gameState.players.length) return; 
         if (this.gameState.isRunning) {
             const now = Date.now();
             this.gameState.elapsedTime = Math.floor((now - this.gameState.startTime) / 1000);
         }
-        this.gameState.players.forEach((player) => {
-            const elapsedSinceGameStart = this.gameState.elapsedTime;
-            if (player.currentStatus === "playing") {
-                player.timeIn = elapsedSinceGameStart - player.lastSubbedInTime;
-            } else {
-                player.timeOut = elapsedSinceGameStart - player.lastSubbedOutTime;
-            }
-        });
         this.renderPlayers();
         this.gameState.saveState();
     }
@@ -283,36 +260,30 @@ class GameUI {
         const now = Date.now();
     
         if (this.intervalId === null) {
-            // Game is currently paused or hasn't started. We are starting or resuming.
             if (this.gameState.pauseTime && this.gameState.elapsedTime) {
-                // We were paused, so recalculate startTime so that elapsedTime picks up where we left off
-                // elapsedTime is in seconds, so convert to milliseconds
                 this.gameState.startTime = now - (this.gameState.elapsedTime * 1000);
                 this.gameState.pauseTime = null;
             } else if (!this.gameState.startTime) {
-                // New start
                 this.gameState.startTime = now;
-                this.gameState.elapsedTime = 0; // reset or ensure zero if starting fresh
+                this.gameState.elapsedTime = 0;
             }
     
             this.startTimers();
-            this.elements.startStopBtn.innerHTML = "&#10074;&#10074;"; // pause icon
+            this.elements.startStopBtn.innerHTML = "&#10074;&#10074;";
             this.gameState.isRunning = true;
     
         } else {
-            // Game is currently running. We are pausing.
             clearInterval(this.intervalId);
             this.intervalId = null;
-    
-            // Calculate elapsed time at the pause moment
             this.gameState.elapsedTime = Math.floor((now - this.gameState.startTime) / 1000);
     
-            this.elements.startStopBtn.innerHTML = "&#9658;"; // play icon
+            this.elements.startStopBtn.innerHTML = "&#9658;";
             this.gameState.isRunning = false;
-            this.gameState.pauseTime = now; // Store the pause time as a number
+            this.gameState.pauseTime = now;
         }
     
         this.gameState.saveState();
+        this.renderPlayers();
     }
     
 
@@ -325,6 +296,7 @@ class GameUI {
         this.elements.startStopBtn.innerHTML = "&#9658;";
         this.gameState.isRunning = false;
         this.gameState.saveState();
+        this.renderPlayers();
     }
 
     startTimers() {
@@ -370,55 +342,83 @@ class GameUI {
         this.renderPlayers();
     }
 
+    // Color references:
+    // Play button (original): #28a745 (green)
+    // Pause button (original): #f0ad4e (orange)
+    //
+    // According to instructions:
+    // Total In font color = orange (#f0ad4e)
+    // Total Out font color = green (#28a745)
+    //
+    // When player is IN:
+    //   Status and Timer = orange (#f0ad4e)
+    // When player is OUT:
+    //   Status and Timer = green (#28a745)
+
     renderPlayers() {
-        // Sorting by total playing time in + current stint if playing
         this.gameState.players.sort((a, b) => {
-            const aVal = a.totalTimeIn + (a.currentStatus === "playing" ? a.timeIn : 0);
-            const bVal = b.totalTimeIn + (b.currentStatus === "playing" ? b.timeIn : 0);
+            const aVal = a.totalTimeIn + (a.currentStatus === "playing" ? (this.gameState.elapsedTime - a.lastSubbedInTime) : 0);
+            const bVal = b.totalTimeIn + (b.currentStatus === "playing" ? (this.gameState.elapsedTime - b.lastSubbedInTime) : 0);
             return aVal - bVal;
         });
 
         this.elements.playersList.innerHTML = `
             <div class="player header">
-                <div>&nbsp;</div>
-                <div>Player / Status <br><small><strong>(touch to edit)</strong></small></div>
+                <div>Command</div>
+                <div>Player / Status <br><small>(touch to edit)</small></div>
                 <div>Timer</div>
                 <div>Total In / Total Out</div>
             </div>
         `;
 
+        const totalElapsed = this.gameState.elapsedTime;
+
         this.gameState.players.forEach((player) => {
             const isPlaying = player.currentStatus === "playing";
-            const displayTotalIn = player.totalTimeIn + (isPlaying ? player.timeIn : 0);
-            const displayTotalOut = player.totalTimeOut + (!isPlaying ? player.timeOut : 0);
+            
+            const currentIn = isPlaying ? (totalElapsed - player.lastSubbedInTime) : 0;
+            const currentOut = !isPlaying ? (totalElapsed - player.lastSubbedOutTime) : 0;
+
+            const displayTotalIn = player.totalTimeIn + currentIn;
+            const displayTotalOut = player.totalTimeOut + currentOut;
+
+            // Determine colors
+            const totalOutColor = "#f0ad4e";  // orange (pause button color)
+            const totalInColor = "#28a745"; // green (play button color)
+
+            let statusColor, timerColor;
+            if (isPlaying) {
+                // Player IN -> status and timer = green (#28a745)
+                statusColor = "#28a745";
+                timerColor = "#28a745";
+            } else {
+                // Player OUT -> status and timer = orange (#f0ad4e)
+                statusColor = "#f0ad4e";
+                timerColor = "#f0ad4e";
+            }
 
             const buttonHtml = isPlaying
                 ? `<button class="small-button small-pause-button" onclick="ui.togglePlayerStatus(${player.id})">&#10074;&#10074;</button>`
                 : `<button class="small-button small-play-button" onclick="ui.togglePlayerStatus(${player.id})">&#9658;</button>`;
 
-            const timerHtml = isPlaying
-                ? `${this.formatTime(player.timeIn)}<br>&nbsp;`
-                : `<br>${this.formatTime(player.timeOut)}`;
+            // Status text
+            const statusText = isPlaying 
+                ? `In @ ${player.subbedInTime || 'Start'}`
+                : player.currentStatus === "Started Out" 
+                    ? "Started Out" 
+                    : `Out @ ${player.subbedOutTime || 'Start'}`;
 
-            let statusClass = isPlaying ? "playing" : "bench";
             const playerEl = document.createElement("div");
             playerEl.id = `player-${player.id}`;
-            playerEl.className = `player ${statusClass}`;
+            playerEl.className = `player ${isPlaying ? "playing" : "bench"}`;
 
-            // Align glyphs by using an inline-block of fixed width
             playerEl.innerHTML = `
                 <div>${buttonHtml}</div>
-                <div class="name"><strong>${player.name}</strong><br>${
-                    isPlaying 
-                        ? `In @ ${player.subbedInTime || 'Start'}`
-                        : player.currentStatus === "Started Out" 
-                            ? "Started Out" 
-                            : `Out @ ${player.subbedOutTime || 'Start'}`
-                }</div>
-                <div class="timer">${timerHtml}</div>
+                <div class="name" ><strong>${player.name}</strong><br><span style="color:${statusColor};">${statusText}</span></div>
+                <div class="timer" style="color:${timerColor};"><strong>${isPlaying ? this.formatTime(currentIn) : this.formatTime(currentOut)}</strong></div>
                 <div class="total-timer">
-                    <div><span class="glyph-container">▶</span> ${this.formatTime(displayTotalIn)}</div>
-                    <div><span class="glyph-container">&#x23F8;</span> ${this.formatTime(displayTotalOut)}</div>
+                    <div style="color:${totalInColor};">${this.formatTime(displayTotalIn)}</div>
+                    <div style="color:${totalOutColor};">${this.formatTime(displayTotalOut)}</div>
                 </div>
             `;
 
@@ -455,8 +455,8 @@ class GameUI {
             setTimeout(() => playerEl.classList.remove('subbing-out'), 600);
         }
 
-        this.renderPlayers();
         this.gameState.saveState();
+        this.renderPlayers();
     }
 }
 
