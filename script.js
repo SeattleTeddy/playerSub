@@ -413,10 +413,10 @@ class GameUI {
 
             // Status text
             const statusText = isPlaying 
-                ? `<strong>In</strong> <span style="color: black;">@ ${player.subbedInTime || 'Start'}</span>`
+                ? `<strong>In @</strong> <span style="color: black;">${player.subbedInTime || 'Start'}</span>`
                 : player.currentStatus === "Started Out" 
                     ? "Started Out" 
-                    : `<strong>Out</strong> <span style="color: black;">@ ${player.subbedOutTime || 'Start'}</span>`;
+                    : `<strong>Out @</strong> <span style="color: black;">${player.subbedOutTime || 'Start'}</span>`;
 
             const playerEl = document.createElement("div");
             playerEl.id = `player-${player.id}`;
