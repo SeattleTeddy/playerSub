@@ -403,10 +403,10 @@ class GameUI {
 
             // Status text
             const statusText = isPlaying 
-                ? `In @ ${player.subbedInTime || 'Start'}`
+                ? `<strong>In</strong> <span style="color: black;">@ ${player.subbedInTime || 'Start'}</span>`
                 : player.currentStatus === "Started Out" 
                     ? "Started Out" 
-                    : `Out @ ${player.subbedOutTime || 'Start'}`;
+                    : `<strong>Out</strong> <span style="color: black;">@ ${player.subbedOutTime || 'Start'}</span>`;
 
             const playerEl = document.createElement("div");
             playerEl.id = `player-${player.id}`;
@@ -414,7 +414,7 @@ class GameUI {
 
             playerEl.innerHTML = `
                 <div>${buttonHtml}</div>
-                <div class="name"><strong style="font-size: 1.0em;">${player.name.charAt(0)}</strong>${player.name.slice(1)}<br><span style="color:${statusColor}; font-size: 0.9em;">${statusText}</span></div>
+                <div class="name"><strong style="font-size: 1.2em;">${player.name.charAt(0)}</strong>${player.name.slice(1)}<br><span style="color:${statusColor}; font-size: 0.9em;">${statusText}</span></div>
                 <div class="timer" style="color:${timerColor}; font-size: 1.75em;"><strong>${isPlaying ? this.formatTime(currentIn) : this.formatTime(currentOut)}</strong></div>
                 <div class="total-timer">
                     <div style="color:${totalInColor}; font-weight: ${isPlaying ? 'bold' : 'normal'}; font-size: 1.2em;">${this.formatTime(displayTotalIn)}</div>
