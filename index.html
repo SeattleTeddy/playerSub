@@ -67,6 +67,9 @@
       background: #e9ecef;
       font-weight: bold;
       text-align: left;
+      position: sticky;
+      top: 50px; /* Adjust based on the height of the controls-container */
+      z-index: 999;
     }
     .player.header div {
       text-align: left;
@@ -137,7 +140,12 @@
       align-items: center;
       margin-bottom: 16px;
       gap: 8px;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1000;
     }
+    
     #startStopBtn {
       width: 40px;
       height: 40px;
@@ -195,18 +203,18 @@
   </style>
 </head>
 <body>
-  <div class="controls-container">
+  <div class="controls-container sticky">
     <div id="elapsedTime">0:00</div>
     <button id="startStopBtn" class="button play-button">&#9658;</button>
     <button id="resetGameBtn" class="button">&#8635;</button>
   </div>
 
-  <div style="text-align:center; margin-bottom: 16px;">
+  <div style="text-align:center; margin-bottom: 0px;">
     Sorted by total playing time in, from least at the top to most at the bottom.
   </div>
 
   <div id="playersList">
-    <div class="player header">
+    <div class="player header sticky">
       <div>Command</div>
       <div>Player / Status <br><small>(touch to edit)</small></div>
       <div>Timer</div>

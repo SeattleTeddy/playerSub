@@ -414,11 +414,11 @@ class GameUI {
 
             playerEl.innerHTML = `
                 <div>${buttonHtml}</div>
-                <div class="name" ><strong>${player.name}</strong><br><span style="color:${statusColor};">${statusText}</span></div>
-                <div class="timer" style="color:${timerColor};"><strong>${isPlaying ? this.formatTime(currentIn) : this.formatTime(currentOut)}</strong></div>
+                <div class="name"><strong style="font-size: 1.0em;">${player.name.charAt(0)}</strong>${player.name.slice(1)}<br><span style="color:${statusColor}; font-size: 0.9em;">${statusText}</span></div>
+                <div class="timer" style="color:${timerColor}; font-size: 1.75em;"><strong>${isPlaying ? this.formatTime(currentIn) : this.formatTime(currentOut)}</strong></div>
                 <div class="total-timer">
-                    <div style="color:${totalInColor};">${this.formatTime(displayTotalIn)}</div>
-                    <div style="color:${totalOutColor};">${this.formatTime(displayTotalOut)}</div>
+                    <div style="color:${totalInColor}; font-weight: ${isPlaying ? 'bold' : 'normal'}; font-size: 1.2em;">${this.formatTime(displayTotalIn)}</div>
+                    <div style="color:${totalOutColor}; font-weight: ${isPlaying ? 'normal' : 'bold'}; font-size: 1.2em;">${this.formatTime(displayTotalOut)}</div>
                 </div>
             `;
 
