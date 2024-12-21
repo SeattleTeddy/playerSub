@@ -107,11 +107,14 @@
     }
     .timer {
       text-align: center;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+    }
+    .timer.out {
+      box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.1) inset;
     }
     .total-timer {
       text-align: center;
-      /*box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);*/
+     
     }
     .small-button {
       font-family: 'Arial', sans-serif;
@@ -136,7 +139,7 @@
     }
     .controls-container {
       display: flex;
-      justify-content: center;
+      justify-content: left;
       align-items: center;
       margin-bottom: 16px;
       gap: 8px;
@@ -190,7 +193,11 @@
     #elapsedTime {
       font-size: 2.5em;
       font-weight: bold;
-      margin-right: 16px;
+      padding-left:5px;
+      padding-right:5px;
+      margin-right: 12px;
+      margin-left: 12px;
+      /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.1); */
     }
     #resetSoundersBtn {
       background-color: #28a745;
@@ -206,26 +213,29 @@
       align-items: left;
       justify-content: left;
       font-family: 'Oxanium', sans-serif;
-      margin-left: 16px;
+      margin-left: 4px;
     }
     #playingCount {
       color: #28a745; /* green */
+      font-size: 0.9em;
      
     }
     #benchCount {
       color: #f0ad4e; /* orange */
+      font-size: 0.9em;
     }
   </style>
 </head>
 <body>
   <div class="controls-container sticky">
-    <div id="elapsedTime">0:00</div>
-    <button id="startStopBtn" class="button play-button">&#9658;</button>
-    <button id="resetGameBtn" class="button">&#8635;</button>
     <div id="playerStatus">
       <div id="playingCount">0 playing</div>
       <div id="benchCount">0 on bench</div>
-    </div>
+    </div> 
+    <div id="elapsedTime">0:00</div>
+    <button id="startStopBtn" class="button play-button">&#9658;</button>
+    <button id="resetGameBtn" class="button">&#8635;</button>
+
   </div>
 
   <div style="text-align:center; margin-bottom: 0px;">
@@ -241,11 +251,12 @@
     </div>
   </div>
   <div>
-    <input id="playerNameInput" type="text" placeholder="Player Name">
     <button id="addPlayerBtn" class="button">Add Player</button>
+    <input id="playerNameInput" type="text" placeholder="Player Name">
+    
   </div>
   <div>
-    <button id="resetSampleTeamBtn" class="button">Reset to Sample Team</button>
+    <button id="resetSampleTeamBtn" class="button">Reset to Sample Team</button><br>
     <button id="resetSoundersBtn" class="button">Reset to Sounders</button><br>
     <button id="deleteAllDataBtn" class="button" style="background-color: #dc3545;">Delete all saved data</button>
   </div>

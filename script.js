@@ -177,7 +177,7 @@ class GameUI {
 
         if (this.elements.resetSoundersBtn) {
             this.elements.resetSoundersBtn.addEventListener("click", () => {
-                if (confirm("Reset to Sounders team and pause the game?")) {
+                if (confirm("Reset to Sounders players, reset all timers to 0:00, and pause the game?")) {
                     this.stopGame();
                     this.gameState.loadSoundersTeam();
                     this.renderPlayers();
@@ -188,7 +188,7 @@ class GameUI {
 
         if (this.elements.resetSampleTeamBtn) {
             this.elements.resetSampleTeamBtn.addEventListener("click", () => {
-                if (confirm("Reset to Sample Team and pause the game?")) {
+                if (confirm("Reset to Sample Team players, reset all timers to 0:00, and pause the game?")) {
                     this.stopGame();
                     this.gameState.loadSampleTeam();
                     this.renderPlayers();
@@ -199,7 +199,7 @@ class GameUI {
 
         if (this.elements.deleteAllDataBtn) {
             this.elements.deleteAllDataBtn.addEventListener("click", () => {
-                if (confirm("Delete all saved data and pause the game?")) {
+                if (confirm("Delete all saved data, reset all timers to 0:00, and pause the game?")) {
                     this.stopGame();
                     this.gameState.deleteAllData();
                     this.renderPlayers();
@@ -425,7 +425,7 @@ class GameUI {
             playerEl.innerHTML = `
                 <div>${buttonHtml}</div>
                 <div class="name"><strong style="font-size: 1.2em;">${player.name.charAt(0)}</strong>${player.name.slice(1)}<br><span style="color:${statusColor}; font-size: 0.9em;">${statusText}</span></div>
-                <div class="timer" style="color:${timerColor}; font-size: 1.75em;"><strong>${isPlaying ? this.formatTime(currentIn) : this.formatTime(currentOut)}</strong></div>
+                <div class="timer ${!isPlaying ? 'out' : ''}" style="color:${timerColor}; font-size: 1.75em;"><strong>${isPlaying ? this.formatTime(currentIn) : this.formatTime(currentOut)}</strong></div>
                 <div class="total-timer">
                     <div style="color:${totalInColor}; font-weight: ${isPlaying ? 'bold' : 'normal'}; font-size: 1.2em;">${this.formatTime(displayTotalIn)}</div>
                     <div style="color:${totalOutColor}; font-weight: ${isPlaying ? 'normal' : 'bold'}; font-size: 1.2em;">${this.formatTime(displayTotalOut)}</div>
