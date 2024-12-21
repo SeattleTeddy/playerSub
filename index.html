@@ -155,10 +155,10 @@
       text-align: center;
       font-size: 1.5em;
     }
-    .play-button {
-      background-color: #28a745;
-    }
     .pause-button {
+      background-color: #28a745;
+    
+    }.play-button {
       background-color: #f0ad4e;
     }
     .total-timer {
@@ -200,6 +200,21 @@
       background-color: #ff9800;
       color: #fff;
     }
+    #playerStatus {
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      justify-content: left;
+      font-family: 'Oxanium', sans-serif;
+      margin-left: 16px;
+    }
+    #playingCount {
+      color: #28a745; /* green */
+     
+    }
+    #benchCount {
+      color: #f0ad4e; /* orange */
+    }
   </style>
 </head>
 <body>
@@ -207,6 +222,10 @@
     <div id="elapsedTime">0:00</div>
     <button id="startStopBtn" class="button play-button">&#9658;</button>
     <button id="resetGameBtn" class="button">&#8635;</button>
+    <div id="playerStatus">
+      <div id="playingCount">0 playing</div>
+      <div id="benchCount">0 on bench</div>
+    </div>
   </div>
 
   <div style="text-align:center; margin-bottom: 0px;">

@@ -270,6 +270,8 @@ class GameUI {
     
             this.startTimers();
             this.elements.startStopBtn.innerHTML = "&#10074;&#10074;";
+            this.elements.startStopBtn.classList.remove("pause-button");
+            this.elements.startStopBtn.classList.add("play-button");
             this.gameState.isRunning = true;
     
         } else {
@@ -278,6 +280,8 @@ class GameUI {
             this.gameState.elapsedTime = Math.floor((now - this.gameState.startTime) / 1000);
     
             this.elements.startStopBtn.innerHTML = "&#9658;";
+            this.elements.startStopBtn.classList.remove("play-button");
+            this.elements.startStopBtn.classList.add("pause-button");
             this.gameState.isRunning = false;
             this.gameState.pauseTime = now;
         }
@@ -294,6 +298,8 @@ class GameUI {
         }
         this.gameState.pauseTime = Date.now();
         this.elements.startStopBtn.innerHTML = "&#9658;";
+        this.elements.startStopBtn.classList.remove("play-button");
+        this.elements.startStopBtn.classList.add("pause-button");
         this.gameState.isRunning = false;
         this.gameState.saveState();
         this.renderPlayers();
@@ -372,6 +378,8 @@ class GameUI {
         `;
 
         const totalElapsed = this.gameState.elapsedTime;
+        let playingCount = 0;
+        let benchCount = 0;
 
         this.gameState.players.forEach((player) => {
             const isPlaying = player.currentStatus === "playing";
@@ -391,10 +399,12 @@ class GameUI {
                 // Player IN -> status and timer = green (#28a745)
                 statusColor = "#28a745";
                 timerColor = "#28a745";
+                playingCount++;
             } else {
                 // Player OUT -> status and timer = orange (#f0ad4e)
                 statusColor = "#f0ad4e";
                 timerColor = "#f0ad4e";
+                benchCount++;
             }
 
             const buttonHtml = isPlaying
@@ -427,6 +437,10 @@ class GameUI {
 
             this.elements.playersList.appendChild(playerEl);
         });
+
+        // Update player status counts
+        document.getElementById('playingCount').innerHTML = `<strong>${playingCount}</strong> playing`;
+        document.getElementById('benchCount').innerHTML = `<strong>${benchCount}</strong> on bench`;
     }
 
     togglePlayerStatus(playerId) {
