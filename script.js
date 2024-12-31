@@ -199,7 +199,7 @@ class GameUI {
 
         if (this.elements.deleteAllDataBtn) {
             this.elements.deleteAllDataBtn.addEventListener("click", () => {
-                if (confirm("Delete all saved data, reset all timers to 0:00, and pause the game?")) {
+                if (confirm("Delete all players, remove all saved data, reset timers to 0:00, and pause the game?")) {
                     this.stopGame();
                     this.gameState.deleteAllData();
                     this.renderPlayers();
