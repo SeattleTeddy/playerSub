@@ -391,7 +391,7 @@ class GameUI {
             const displayTotalOut = player.totalTimeOut + currentOut;
 
             // Determine colors
-            const totalOutColor = "#f0ad4e";  // orange (pause button color)
+            const totalOutColor = "#ffcccb";  // light red
             const totalInColor = "#28a745"; // green (play button color)
 
             let statusColor, timerColor;
@@ -401,9 +401,9 @@ class GameUI {
                 timerColor = "#28a745";
                 playingCount++;
             } else {
-                // Player OUT -> status and timer = orange (#f0ad4e)
-                statusColor = "#f0ad4e";
-                timerColor = "#f0ad4e";
+                // Player OUT -> status and timer = light red (#ffcccb)
+                statusColor = "#ffcccb";
+                timerColor = "#ffcccb";
                 benchCount++;
             }
 
